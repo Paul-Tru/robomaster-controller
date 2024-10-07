@@ -3,73 +3,96 @@ import os
 try:
     import customtkinter as ctk
     import configparser
-    from robomaster import robot
+
 except ImportError as e:
     print(f"Error: {e}\nInstalling required packages...")
     os.system("pip install -r requirements.txt")
     # Optionally re-import after installation
     import customtkinter as ctk
     import configparser
-    from robomaster import robot
 
-class Setup():
+class Setup:
     def __init__(self):
         self.config = configparser.ConfigParser()
-        self.rob_ip = None
-        self.pc_ip = None
-        ctk.set_appearance_mode("dark")
+
+        self.config.read("config.ini")
+        self.debug = bool(self.config["GENERAL"]["debug"])
+        ctk.set_appearance_mode(self.config["GUI"]["appearance"])
+
         self.app = ctk.CTk()
-        self.app.geometry("1050x500")
-        self.app.title("Titan")
-        self.create_frames()
+        self.app.geometry(self.config["GUI"]["geometry"])
+        if not self.debug:
+            self.app.title("Titan Setup")
+        else:
+            self.app.title("Titan Setup (Debug)")
+        self.frame_pad = self.config["GUI"]["frame_pad"]
+        self.frame_font = eval(self.config["GUI"]["frame_font"])
+        self.comp_pad = self.config["GUI"]["component_pad"]
+
         self.ip_config()
+        self.robot()
         self.app.mainloop()
 
-    def read_ini(self):
-        self.config.read("config.ini")
-        try:
-            rob_ip = self.config["ip"],["rob"]
-            pc_ip = self.config["ip"],["pc"]
-            self.check_connection(rob_ip, pc_ip)
-        except:
-            print("reading ini ip config failed")
+        if not self.debug:
+            import robot_controll as rc
 
-    def check_connection(self, rob_ip, pc_ip):
         try:
-            robot.config.ROBOT_IP_STR = rob_ip
-            robot.config.LOCAL_IP_STR = pc_ip
-            ep_robot = robot.Robot()
-            ep_robot.initialize(conn_type="sta")
-            SN = ep_robot.get_sn()
-            print("Robot SN:", SN)
-            ep_robot.close()
-            return True
-        except Exception as e:
-            print("Error while checking connection:", e)
-            return False
+            self.rob_ip = self.config["IP"]["rob"]
+            self.pc_ip = self.config["IP"]["pc"]
+        except KeyError:
+            self.rob_ip = None
+            self.pc_ip = None
 
-    def create_frames(self):
-        self.left_frame = ctk.CTkFrame(self.app)
-        self.left_frame.pack(side="left", padx=20, pady=20)
+
+    def write_ini(self, sec, var, value):
+        self.config[sec][var] = value
+        with open('config.ini', 'w') as configfile:  # save
+            self.config.write(configfile)
 
     def ip_config(self):
-        label = ctk.CTkLabel(self.left_frame, text="Wifi Config", font=("Arial", 15, "bold"))
-        label.pack(padx=10, pady=10)
+        left_frame = ctk.CTkFrame(self.app)
+        left_frame.pack(side="left", padx=self.frame_pad, pady=self.frame_pad)
 
-        entry_rob_ip = ctk.CTkEntry(self.left_frame, placeholder_text="Robot IP")
-        entry_rob_ip.pack(padx=10, pady=10)
+        label = ctk.CTkLabel(left_frame, text="Wifi", font=self.frame_font)
+        label.pack(padx=self.comp_pad, pady=self.comp_pad)
 
-        entry_pc_ip = ctk.CTkEntry(self.left_frame, placeholder_text="Computer IP")
-        entry_pc_ip.pack(padx=10, pady=10)
+        self.entry_rob_ip = ctk.CTkEntry(left_frame, placeholder_text="Robot IP")
+        self.entry_rob_ip.pack(padx=self.comp_pad, pady=self.comp_pad)
+
+        self.entry_pc_ip = ctk.CTkEntry(left_frame, placeholder_text="Computer IP")
+        self.entry_pc_ip.pack(padx=self.comp_pad, pady=self.comp_pad)
+
+        status = ctk.CTkLabel(left_frame, text="❌ Not Connected")
+        status.pack(padx=self.comp_pad, pady=self.comp_pad)
 
         def get_values():
-            rob_ip = entry_rob_ip.get()
-            pc_ip = entry_pc_ip.get()
-            print(self.check_connection(rob_ip=str(rob_ip), pc_ip=str(pc_ip)))
-            self.pc_ip = entry_pc_ip.get()
+            rob_ip = self.entry_rob_ip.get()
+            pc_ip = self.entry_pc_ip.get()
+            if rob_ip is not None:
+                self.rob_ip = rob_ip
+                self.pc_ip = pc_ip
 
-        self.get_btn = ctk.CTkButton(self.left_frame, text="Get", command=get_values)
+            try:
+                check = rc.check_conn(self.rob_ip, self.pc_ip)
+            except:
+                check = False
+
+            if check or self.debug:
+                left_frame.configure(fg_color="#302c2c")
+                status.configure(text="✅ Connected")
+            else:
+                left_frame.configure(fg_color="darkred")
+                status.configure(text="❌ Not Connected")
+
+        self.get_btn = ctk.CTkButton(left_frame, text="Get", command=get_values)
         self.get_btn.pack(padx=15, pady=10)
+
+    def robot(self):
+        right_frame = ctk.CTkFrame(self.app)
+        right_frame.pack(side="right", padx=self.frame_pad, pady=self.frame_pad)
+
+        label = ctk.CTkLabel(right_frame, text="Robot", font=self.frame_font)
+        label.pack(padx=self.comp_pad, pady=self.comp_pad)
         
 
 setup = Setup()
