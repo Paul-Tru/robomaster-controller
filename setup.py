@@ -1,5 +1,8 @@
 import os
 
+from pygame.transform import threshold
+from sqlalchemy import column
+
 try:
     import customtkinter as ctk
     import configparser
@@ -32,6 +35,7 @@ class Setup:
         self.ip_config()
         self.robot()
         self.debug_switch()
+        self.controller()
         self.app.mainloop()
 
         if not self.debug:
@@ -114,18 +118,48 @@ class Setup:
     def max_speed(self):
         frame = ctk.CTkFrame(self.right_frame)
         frame.pack(padx=self.comp_pad, pady=self.comp_pad)
-        speed = self.config["Robot"]["max_speed"]
+
+        speed = self.config["ROBOT"]["max_speed"]
+
         label = ctk.CTkLabel(frame, text=f"Max Speed: {speed}")
         label.pack(padx=self.comp_pad, pady=self.comp_pad)
 
         def get(value):
             max_speed = int(value)  # Slider value is passed automatically
             label.configure(text=f"Max Speed: {max_speed}")  # Update label with formatted value
-            self.config["Robot"]["max_speed"] = str(max_speed)
+            self.config["ROBOT"]["max_speed"] = str(max_speed)
+            print("Max Speed: " + str(max_speed))
 
-        max_speed_slider = ctk.CTkSlider(frame, number_of_steps=10, to=5000, command=get)
-        max_speed_slider.pack(padx=self.comp_pad, pady=self.comp_pad)
-        max_speed_slider.set(int(speed))
+        slider = ctk.CTkSlider(frame, number_of_steps=10, to=5000, command=get)
+        slider.pack(padx=self.comp_pad, pady=self.comp_pad)
+        slider.set(int(speed))
 
+    def controller(self):
+        self.controller_frame = ctk.CTkFrame(self.app)
+        self.controller_frame.grid(column=1, row=0, sticky="n", padx=self.frame_pad, pady=self.frame_pad)
+
+        label = ctk.CTkLabel(self.controller_frame, text="Controller", font=self.frame_font)
+        label.pack(padx=self.comp_pad, pady=self.comp_pad)
+
+        self.threshold_slider()
+
+    def threshold_slider(self):
+        frame = ctk.CTkFrame(self.controller_frame)
+        frame.pack(padx=self.frame_pad, pady=self.frame_pad)
+
+        threshold = self.config["CONTROLLER"]["threshold"]
+
+        label = ctk.CTkLabel(frame, text=f"Threshold: {threshold}")
+        label.pack(padx=self.comp_pad, pady=self.comp_pada
+
+        def get(value):
+            threshold = int(value)  # Slider value is passed automatically
+            label.configure(text=f"Threshold: {threshold}")  # Update label with formatted value
+            self.config["CONTROLLER"]["threshold"] = str(threshold)
+            print("Threshold: "+ str(threshold))
+
+        slider = ctk.CTkSlider(frame, number_of_steps=4, to=200, command=get)
+        slider.pack(padx=self.comp_pad, pady=self.comp_pad)
+        slider.set(int(threshold))
 
 setup = Setup()
