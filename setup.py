@@ -16,7 +16,7 @@ class Setup:
         self.config = configparser.ConfigParser()
 
         self.config.read("config.ini")
-        self.debug = bool(self.config["GENERAL"]["debug"])
+        self.debug = self.config.getboolean("GENERAL", "debug")
         ctk.set_appearance_mode(self.config["GUI"]["appearance"])
 
         self.app = ctk.CTk()
@@ -31,6 +31,7 @@ class Setup:
 
         self.ip_config()
         self.robot()
+        self.debug_switch()
         self.app.mainloop()
 
         if not self.debug:
@@ -43,26 +44,20 @@ class Setup:
             self.rob_ip = None
             self.pc_ip = None
 
-
-    def write_ini(self, sec, var, value):
-        self.config[sec][var] = value
-        with open('config.ini', 'w') as configfile:  # save
-            self.config.write(configfile)
-
     def ip_config(self):
-        left_frame = ctk.CTkFrame(self.app)
-        left_frame.pack(side="left", padx=self.frame_pad, pady=self.frame_pad)
+        frame = ctk.CTkFrame(self.app)
+        frame.grid(column=0, row=0, padx=self.frame_pad, pady=self.frame_pad)
 
-        label = ctk.CTkLabel(left_frame, text="Wifi", font=self.frame_font)
+        label = ctk.CTkLabel(frame, text="Wifi", font=self.frame_font)
         label.pack(padx=self.comp_pad, pady=self.comp_pad)
 
-        self.entry_rob_ip = ctk.CTkEntry(left_frame, placeholder_text="Robot IP")
+        self.entry_rob_ip = ctk.CTkEntry(frame, placeholder_text="Robot IP")
         self.entry_rob_ip.pack(padx=self.comp_pad, pady=self.comp_pad)
 
-        self.entry_pc_ip = ctk.CTkEntry(left_frame, placeholder_text="Computer IP")
+        self.entry_pc_ip = ctk.CTkEntry(frame, placeholder_text="Computer IP")
         self.entry_pc_ip.pack(padx=self.comp_pad, pady=self.comp_pad)
 
-        status = ctk.CTkLabel(left_frame, text="❌ Not Connected")
+        status = ctk.CTkLabel(frame, text="❌ Not Connected")
         status.pack(padx=self.comp_pad, pady=self.comp_pad)
 
         def get_values():
@@ -78,21 +73,59 @@ class Setup:
                 check = False
 
             if check or self.debug:
-                left_frame.configure(fg_color="#302c2c")
+                frame.configure(fg_color="#302c2c")
                 status.configure(text="✅ Connected")
             else:
-                left_frame.configure(fg_color="darkred")
+                frame.configure(fg_color="darkred")
                 status.configure(text="❌ Not Connected")
 
-        self.get_btn = ctk.CTkButton(left_frame, text="Get", command=get_values)
+        self.get_btn = ctk.CTkButton(frame, text="Get", command=get_values)
         self.get_btn.pack(padx=15, pady=10)
 
-    def robot(self):
-        right_frame = ctk.CTkFrame(self.app)
-        right_frame.pack(side="right", padx=self.frame_pad, pady=self.frame_pad)
+    def debug_switch(self):
+        frame = ctk.CTkFrame(self.app)
+        frame.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-        label = ctk.CTkLabel(right_frame, text="Robot", font=self.frame_font)
+        def change():
+            value = switch.get()
+            if value == 0:
+                self.config["GENERAL"]["debug"] = "True"
+            else:
+                self.config["GENERAL"]["debug"] = "False"
+            print(value)
+
+        switch = ctk.CTkSwitch(frame, text="Debug", command=change)
+        switch.pack(padx=self.comp_pad, pady=self.comp_pad)
+
+        if self.debug:
+            switch.select()
+        else:
+            switch.deselect()
+
+    def robot(self):
+        self.right_frame = ctk.CTkFrame(self.app)
+        self.right_frame.grid(column=2, row=0, sticky="n", padx=self.frame_pad, pady=self.frame_pad)
+
+        label = ctk.CTkLabel(self.right_frame, text="Robot", font=self.frame_font)
         label.pack(padx=self.comp_pad, pady=self.comp_pad)
-        
+
+        self.max_speed()
+
+    def max_speed(self):
+        frame = ctk.CTkFrame(self.right_frame)
+        frame.pack(padx=self.comp_pad, pady=self.comp_pad)
+        speed = self.config["Robot"]["max_speed"]
+        label = ctk.CTkLabel(frame, text=f"Max Speed: {speed}")
+        label.pack(padx=self.comp_pad, pady=self.comp_pad)
+
+        def get(value):
+            max_speed = int(value)  # Slider value is passed automatically
+            label.configure(text=f"Max Speed: {max_speed}")  # Update label with formatted value
+            self.config["Robot"]["max_speed"] = str(max_speed)
+
+        max_speed_slider = ctk.CTkSlider(frame, number_of_steps=10, to=5000, command=get)
+        max_speed_slider.pack(padx=self.comp_pad, pady=self.comp_pad)
+        max_speed_slider.set(int(speed))
+
 
 setup = Setup()
