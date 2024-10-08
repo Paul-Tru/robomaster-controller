@@ -150,7 +150,7 @@ class Setup:
         threshold = self.config["CONTROLLER"]["threshold"]
 
         label = ctk.CTkLabel(frame, text=f"Threshold: {threshold}")
-        label.pack(padx=self.comp_pad, pady=self.comp_pada
+        label.pack(padx=self.comp_pad, pady=self.comp_pad)
 
         def get(value):
             threshold = int(value)  # Slider value is passed automatically
