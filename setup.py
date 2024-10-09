@@ -181,9 +181,8 @@ class Setup:
 
         threshold = self.config["CONTROLLER"]["threshold"]
         max_speed = self.config["ROBOT"]["max_speed"]
-        #steps = 
-        to=int(max_speed)/2
-        steps = to/50
+        to=int(int(max_speed)/2)
+        steps = int(to/50)
 
         label = ctk.CTkLabel(frame, text=f"Threshold: {threshold}/{max_speed}\n \n"
                              f"{str(round(int(threshold)/int(max_speed)*100))}%")
@@ -196,7 +195,7 @@ class Setup:
                             f"{str(round(int(threshold)/int(max_speed)*100))}%")
             self.config["CONTROLLER"]["threshold"] = str(threshold)
             self.save_config()
-            slider.configure(to=int(max_speed)/2, number_of_steps = to/50)
+            slider.configure(to=int(max_speed)/2, number_of_steps = int(to/50))
             print("Threshold: "+ str(threshold))
 
         slider = ctk.CTkSlider(frame, number_of_steps=steps, to=to, command=get)
