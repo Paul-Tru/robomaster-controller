@@ -182,7 +182,7 @@ class Setup:
             def update_frame():
                 if not self.debug:
                     img = vars.ep_camera.read_cv2_image(strategy="newest")
-                    if img is not None:
+                    try:
                         # Convert the frame to RGB (OpenCV uses BGR by default)
                         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                         img_pil = Image.fromarray(img)  # Convert to PIL image
@@ -193,9 +193,9 @@ class Setup:
                         # Update the video label with the new frame
                         self.video_label.configure(image=imgtk)
                         self.video_label.imgtk = imgtk  # Keep a reference to avoid garbage collection
-                    else:
+                    except:
                         # Display an error message or a placeholder image
-                        self.video_label.configure(text="Error: unable to read video stream")
+                        self.video_label.configure(text="Error: unable to read video stream", fg="darkred")
                 else:
                     placeholder_image = Image.open("test.png")  # Load your image file here
                     placeholder_imgtk = ctk.CTkImage(placeholder_image, size=(160, 90))
