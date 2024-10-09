@@ -29,6 +29,7 @@ class Setup:
         self.debug_switch()
         self.tabview_frame()
         self.update_bars()
+        self.start_main_btn()
         self.app.mainloop()
 
         try:
@@ -53,7 +54,7 @@ class Setup:
         self.l_trigger.set((vars.tr_l + turn_speed) / (2 * turn_speed))
         self.r_trigger.set((vars.tr_r + turn_speed) / (2 * turn_speed))
 
-        self.app.after(100, self.update_bars)
+        self.app.after(10, self.update_bars)
 
     def ip_config(self):
         frame = ctk.CTkFrame(self.app)
@@ -172,9 +173,23 @@ class Setup:
             slider.grid(padx=self.comp_pad, pady=self.comp_pad)
             slider.set(int(max_distance))
 
+        def curr_distance():
+            frame = ctk.CTkFrame(self.right_frame)
+            frame.grid(row=3, sticky="nsew", padx=self.comp_pad, pady=self.comp_pad)
+
+            label = ctk.CTkLabel(frame, text="Distance: N/A")
+            label.grid(padx=self.comp_pad, pady=self.comp_pad)
+
+            def update():
+                label.configure(text=f"Distance: {vars.distance} cm")
+                frame.after(20, update)
+
+            if not self.debug:
+                update()
+
         def video():
             frame = ctk.CTkFrame(self.right_frame)
-            frame.grid(row=3, padx=self.comp_pad, pady=self.comp_pad)
+            frame.grid(row=4, padx=self.comp_pad, pady=self.comp_pad)
 
             self.video_label = ctk.CTkLabel(frame, text="")
             self.video_label.pack()
@@ -197,8 +212,7 @@ class Setup:
                         # Display an error message or a placeholder image
                         self.video_label.configure(text="Error: unable to read video stream", fg="darkred")
                 else:
-                    placeholder_image = Image.open("test.png")  # Load your image file here
-                    placeholder_imgtk = ctk.CTkImage(placeholder_image, size=(160, 90))
+                    placeholder_imgtk = ctk.CTkImage(vars.test_png, size=(160, 90))
                     self.video_label.configure(image=placeholder_imgtk)
                     self.video_label.image = placeholder_imgtk
 
@@ -209,6 +223,7 @@ class Setup:
 
         max_speed()
         max_distance()
+        curr_distance()
         video()
 
     def tabview_frame(self):
@@ -339,4 +354,9 @@ class Setup:
             trigger()
         controller()
 
-    # Example usage:
+    def start_main_btn(self):
+        def start():
+            pass
+
+        btn = ctk.CTkButton(self.app, text="Start", command=start)
+        btn.grid(column=3, row=2)
