@@ -15,6 +15,7 @@ except ImportError as e:
 
 class Setup:
     def __init__(self):
+        self.l_x_stick = None
         self.config = configparser.ConfigParser()
 
         self.config.read("config.ini")
@@ -47,6 +48,27 @@ class Setup:
     def save_config(self):
         with open("config.ini", "w") as configfile:
             self.config.write(configfile)
+
+    def change_bar(self, name, value):
+        max_speed = int(self.config["ROBOT"]["max_speed"])
+        # Normalize value based on max_speed
+        normalized_value = (value + max_speed) / (2 * max_speed)  # Scales value between 0 and 1
+
+        # Update the corresponding progress bar based on the name provided
+        if name == "l_x_stick":
+            self.l_x_stick.set(normalized_value)
+        elif name == "l_y_stick":
+            self.l_y_stick.set(normalized_value)
+        elif name == "r_x_stick":
+            self.r_x_stick.set(normalized_value)
+        elif name == "r_y_stick":
+            self.r_y_stick.set(normalized_value)
+        elif name == "l_trigger":
+            self.l_trigger.set(normalized_value)
+        elif name == "r_stick":
+            self.r_stick.set(normalized_value)
+        else:
+            print(f"Unknown bar name: {name}")
 
     def ip_config(self):
         frame = ctk.CTkFrame(self.app)
@@ -206,15 +228,17 @@ class Setup:
                 to = int(int(max_speed) / 2)
                 steps = int(to / 50)
 
+                percent = round(int(threshold) / int(max_speed) * 100)
                 label = ctk.CTkLabel(frame, text=f"Threshold: {threshold}/{max_speed}\n\n"
-                                                 f"{str(round(int(threshold) / int(max_speed) * 100))}%")
+                                                 f"{percent}%")
                 label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
                 def get(value):
                     threshold = int(value)
                     max_speed = self.config["ROBOT"]["max_speed"]
+                    percent = round(int(threshold) / int(max_speed) * 100)
                     label.configure(text=f"Threshold: {threshold}/{max_speed}\n\n"
-                                         f"{str(round(int(threshold) / int(max_speed) * 100))}%")
+                                         f"{str(percent)}%")
                     self.config["CONTROLLER"]["threshold"] = str(threshold)
                     self.save_config()
                     slider.configure(to=int(max_speed) / 2, number_of_steps=int(to / 50))
@@ -308,4 +332,7 @@ class Setup:
             trigger()
         controller()
 
+    # Example usage:
 setup = Setup()
+setup.change_bar("l_x_stick", 100)
+setup.change_bar("r_y_stick", 200)
