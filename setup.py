@@ -3,6 +3,7 @@ import os
 try:
     import customtkinter as ctk
     import configparser
+    from PIL import Image
 
 except ImportError as e:
     print(f"Error: {e}\nInstalling required packages...")
@@ -10,6 +11,7 @@ except ImportError as e:
     # Optionally re-import after installation
     import customtkinter as ctk
     import configparser
+    from PIL import Image
 
 class Setup:
     def __init__(self):
@@ -32,7 +34,7 @@ class Setup:
         self.ip_config()
         self.robot()
         self.debug_switch()
-        self.controller()
+        self.tabview_frame()
         self.app.mainloop()
 
         try:
@@ -117,165 +119,193 @@ class Setup:
 
     def robot(self):
         self.right_frame = ctk.CTkFrame(self.app)
-        self.right_frame.grid(column=3, row=0, sticky="n", padx=self.frame_pad, pady=self.frame_pad)
+        self.right_frame.grid(column=3, row=0, rowspan=2, sticky="n", padx=self.frame_pad, pady=self.frame_pad)
 
         label = ctk.CTkLabel(self.right_frame, text="Robot", font=self.frame_font)
-        label.pack(padx=self.comp_pad, pady=self.comp_pad)
+        label.grid(row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-        self.max_speed()
-        self.max_distance()
+        def max_speed():
+            frame = ctk.CTkFrame(self.right_frame)
+            frame.grid(row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-    def max_speed(self):
-        frame = ctk.CTkFrame(self.right_frame)
-        frame.pack(padx=self.comp_pad, pady=self.comp_pad)
-
-        max_speed = self.config["ROBOT"]["max_speed"]
-
-        label = ctk.CTkLabel(frame, text=f"Max Speed: {max_speed} rpm")
-        label.pack(padx=self.comp_pad, pady=self.comp_pad)
-
-        
-        def get(value):
-            max_speed = int(value)  # Slider value is passed automatically
-            label.configure(text=f"Max Speed: {max_speed} rpm")  # Update label with formatted value
-            self.config["ROBOT"]["max_speed"] = str(max_speed)
-            self.save_config()
-            print("Max Speed: " + str(max_speed))
-
-        slider = ctk.CTkSlider(frame, number_of_steps=10, to=5000, command=get)
-        slider.pack(padx=self.comp_pad, pady=self.comp_pad)
-        slider.set(int(max_speed))
-
-    def max_distance(self):
-        frame = ctk.CTkFrame(self.right_frame)
-        frame.pack(padx=self.comp_pad, pady=self.comp_pad)
-
-        max_distance = self.config["ROBOT"]["max_distance"]
-
-        label = ctk.CTkLabel(frame, text=f"Max Distance: {max_distance} cm")
-        label.pack(padx=self.comp_pad, pady=self.comp_pad)
-
-        def get(value):
-            max_distance = int(value)  # Slider value is passed automatically
-            label.configure(text=f"Max Distance: {max_distance} cm")  # Update label with formatted value
-            self.config["ROBOT"]["max_distance"] = str(max_distance)
-            self.save_config()
-            print("Max Speed: " + str(max_distance))
-
-        slider = ctk.CTkSlider(frame, number_of_steps=6, to=300, command=get)
-        slider.pack(padx=self.comp_pad, pady=self.comp_pad)
-        slider.set(int(max_distance))
-
-    def controller(self):
-        self.controller_frame = ctk.CTkFrame(self.app)
-        self.controller_frame.grid(column=1, columnspan=2, row=0, rowspan=3, sticky="n", padx=self.frame_pad, pady=self.frame_pad)
-
-        label = ctk.CTkLabel(self.controller_frame, text="Controller", font=self.frame_font)
-        label.grid(column=0, columnspan=2, row=0, padx=self.comp_pad, pady=self.comp_pad)
-
-        def threshold_slider():
-            frame = ctk.CTkFrame(self.controller_frame)
-            frame.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
-
-            threshold = self.config["CONTROLLER"]["threshold"]
             max_speed = self.config["ROBOT"]["max_speed"]
-            to = int(int(max_speed) / 2)
-            steps = int(to / 50)
 
-            label = ctk.CTkLabel(frame, text=f"Threshold: {threshold}/{max_speed}\n\n"
-                                             f"{str(round(int(threshold) / int(max_speed) * 100))}%")
-            label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
+            label = ctk.CTkLabel(frame, text=f"Max Speed: {max_speed} rpm")
+            label.grid(padx=self.comp_pad, pady=self.comp_pad)
+
 
             def get(value):
-                threshold = int(value)
-                max_speed = self.config["ROBOT"]["max_speed"]
-                label.configure(text=f"Threshold: {threshold}/{max_speed}\n\n"
-                                     f"{str(round(int(threshold) / int(max_speed) * 100))}%")
-                self.config["CONTROLLER"]["threshold"] = str(threshold)
+                max_speed = int(value)  # Slider value is passed automatically
+                label.configure(text=f"Max Speed: {max_speed} rpm")  # Update label with formatted value
+                self.config["ROBOT"]["max_speed"] = str(max_speed)
                 self.save_config()
-                slider.configure(to=int(max_speed) / 2, number_of_steps=int(to / 50))
-                print("Threshold: " + str(threshold))
+                print("Max Speed: " + str(max_speed))
 
-            slider = ctk.CTkSlider(frame, number_of_steps=steps, to=to, command=get)
-            slider.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
-            slider.set(int(threshold))
+            slider = ctk.CTkSlider(frame, number_of_steps=10, to=5000, command=get)
+            slider.grid(padx=self.comp_pad, pady=self.comp_pad)
+            slider.set(int(max_speed))
 
-        threshold_slider()
+        def max_distance():
+            frame = ctk.CTkFrame(self.right_frame)
+            frame.grid(row=2, padx=self.comp_pad, pady=self.comp_pad)
 
-        def buttons():
-            self.buttons_text = ctk.CTkTextbox(self.controller_frame)
-            self.buttons_text.grid(column=1, row=1, padx=self.comp_pad, pady=self.comp_pad)
+            max_distance = self.config["ROBOT"]["max_distance"]
 
-        buttons()
+            label = ctk.CTkLabel(frame, text=f"Max Distance: {max_distance} cm")
+            label.grid(padx=self.comp_pad, pady=self.comp_pad)
 
-        def joysticks():
-            self.js_frame = ctk.CTkFrame(self.controller_frame)
-            self.js_frame.grid(column=0, columnspan=2, row=2, padx=self.comp_pad, pady=self.comp_pad)
+            def get(value):
+                max_distance = int(value)  # Slider value is passed automatically
+                label.configure(text=f"Max Distance: {max_distance} cm")  # Update label with formatted value
+                self.config["ROBOT"]["max_distance"] = str(max_distance)
+                self.save_config()
+                print("Max Speed: " + str(max_distance))
 
-            label = ctk.CTkLabel(self.js_frame, text="Joystick", font=self.frame_font)
+            slider = ctk.CTkSlider(frame, number_of_steps=6, to=300, command=get)
+            slider.grid(padx=self.comp_pad, pady=self.comp_pad)
+            slider.set(int(max_distance))
+
+        def video():
+            frame = ctk.CTkFrame(self.right_frame)
+            frame.grid(row=3, padx=self.comp_pad, pady=self.comp_pad)
+
+            self.video_label = ctk.CTkLabel(frame, text="Initializing video stream...")
+            self.video_label.pack()
+
+            if self.debug:
+                placeholder_image = Image.open("test.png")  # Load your image file here
+                placeholder_imgtk = ctk.CTkImage(placeholder_image, size=(160, 90))
+                self.video_label.configure(image=placeholder_imgtk, text="")
+                self.video_label.image = placeholder_imgtk
+
+        max_speed()
+        max_distance()
+        video()
+
+    def tabview_frame(self):
+        self.tabview = ctk.CTkTabview(master=self.app)
+        self.tabview.grid(column=1, columnspan=2, row=0, rowspan=3, sticky="n", padx=self.frame_pad, pady=self.frame_pad)
+
+        self.tabview.add("Controller")  # add tab at the end
+        self.tabview.add("Keyboard")  # add tab at the end
+        self.tabview.set("Controller")  # set currently visible tab
+
+        def controller():
+            self.controller_frame = ctk.CTkFrame(self.tabview.tab("Controller"))
+            self.controller_frame.grid(padx=self.comp_pad, pady=self.comp_pad)
+
+            label = ctk.CTkLabel(self.controller_frame, text="Controller", font=self.frame_font)
             label.grid(column=0, columnspan=2, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-            def joystick_left():
-                frame = ctk.CTkFrame(self.js_frame)
-                frame.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+            def threshold_slider():
+                frame = ctk.CTkFrame(self.controller_frame)
+                frame.grid(column=0, row=1, sticky="n", padx=self.comp_pad, pady=self.comp_pad)
 
-                label = ctk.CTkLabel(frame, text="Left")
+                threshold = self.config["CONTROLLER"]["threshold"]
+                max_speed = self.config["ROBOT"]["max_speed"]
+                to = int(int(max_speed) / 2)
+                steps = int(to / 50)
+
+                label = ctk.CTkLabel(frame, text=f"Threshold: {threshold}/{max_speed}\n\n"
+                                                 f"{str(round(int(threshold) / int(max_speed) * 100))}%")
                 label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-                self.l_x_stick = ctk.CTkProgressBar(frame)
-                self.l_x_stick.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                def get(value):
+                    threshold = int(value)
+                    max_speed = self.config["ROBOT"]["max_speed"]
+                    label.configure(text=f"Threshold: {threshold}/{max_speed}\n\n"
+                                         f"{str(round(int(threshold) / int(max_speed) * 100))}%")
+                    self.config["CONTROLLER"]["threshold"] = str(threshold)
+                    self.save_config()
+                    slider.configure(to=int(max_speed) / 2, number_of_steps=int(to / 50))
+                    print("Threshold: " + str(threshold))
 
-                self.l_y_stick = ctk.CTkProgressBar(frame)
-                self.l_y_stick.grid(column=0, row=2, padx=self.comp_pad, pady=self.comp_pad)
+                slider = ctk.CTkSlider(frame, number_of_steps=steps, to=to, command=get)
+                slider.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                slider.set(int(threshold))
 
-            def joystick_right():
-                frame = ctk.CTkFrame(self.js_frame)
-                frame.grid(column=1, row=1, padx=self.comp_pad, pady=self.comp_pad)
+            def config_buttons():
+                def configure():
+                    print("pressed")
 
-                label = ctk.CTkLabel(frame, text="Right")
-                label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
+                button = ctk.CTkButton(self.controller_frame, text="Configure", command=configure)
+                button.grid(column=0, row=1, sticky="s", padx=self.comp_pad, pady=self.comp_pad)
 
-                self.r_x_stick = ctk.CTkProgressBar(frame)
-                self.r_x_stick.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+            def buttons():
+                self.buttons_text = ctk.CTkTextbox(self.controller_frame)
+                self.buttons_text.grid(column=1, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-                self.r_y_stick = ctk.CTkProgressBar(frame)
-                self.r_y_stick.grid(column=0, row=2, padx=self.comp_pad, pady=self.comp_pad)
+            def joysticks():
+                self.js_frame = ctk.CTkFrame(self.controller_frame)
+                self.js_frame.grid(column=0, columnspan=2, row=2, padx=self.comp_pad, pady=self.comp_pad)
 
-            joystick_left()
-            joystick_right()
+                label = ctk.CTkLabel(self.js_frame, text="Joystick", font=self.frame_font)
+                label.grid(column=0, columnspan=2, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-        joysticks()
+                def joystick_left():
+                    frame = ctk.CTkFrame(self.js_frame)
+                    frame.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-        def trigger():
-            self.trigger_frame = ctk.CTkFrame(self.controller_frame)
-            self.trigger_frame.grid(column=0, columnspan=2, row=3, padx=self.comp_pad, pady=self.comp_pad)
+                    label = ctk.CTkLabel(frame, text="Left")
+                    label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-            label = ctk.CTkLabel(self.trigger_frame, text="Trigger", font=self.frame_font)
-            label.grid(column=0, columnspan=2, row=0, padx=self.comp_pad, pady=self.comp_pad)
+                    self.l_x_stick = ctk.CTkProgressBar(frame)
+                    self.l_x_stick.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-            def trigger_left():
-                frame = ctk.CTkFrame(self.trigger_frame)
-                frame.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                    self.l_y_stick = ctk.CTkProgressBar(frame)
+                    self.l_y_stick.grid(column=0, row=2, padx=self.comp_pad, pady=self.comp_pad)
 
-                label = ctk.CTkLabel(frame, text="Left")
-                label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
+                def joystick_right():
+                    frame = ctk.CTkFrame(self.js_frame)
+                    frame.grid(column=1, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-                self.l_trigger = ctk.CTkProgressBar(frame)
-                self.l_trigger.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                    label = ctk.CTkLabel(frame, text="Right")
+                    label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-            def trigger_right():
-                frame = ctk.CTkFrame(self.trigger_frame)
-                frame.grid(column=1, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                    self.r_x_stick = ctk.CTkProgressBar(frame)
+                    self.r_x_stick.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-                label = ctk.CTkLabel(frame, text="Right")
-                label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
+                    self.r_y_stick = ctk.CTkProgressBar(frame)
+                    self.r_y_stick.grid(column=0, row=2, padx=self.comp_pad, pady=self.comp_pad)
 
-                self.r_stick = ctk.CTkProgressBar(frame)
-                self.r_stick.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                joystick_left()
+                joystick_right()
 
-            trigger_left()
-            trigger_right()
+            def trigger():
+                self.trigger_frame = ctk.CTkFrame(self.controller_frame)
+                self.trigger_frame.grid(column=0, columnspan=2, row=3, padx=self.comp_pad, pady=self.comp_pad)
 
-        trigger()
+                label = ctk.CTkLabel(self.trigger_frame, text="Trigger", font=self.frame_font)
+                label.grid(column=0, columnspan=2, row=0, padx=self.comp_pad, pady=self.comp_pad)
+
+                def trigger_left():
+                    frame = ctk.CTkFrame(self.trigger_frame)
+                    frame.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+
+                    label = ctk.CTkLabel(frame, text="Left")
+                    label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
+
+                    self.l_trigger = ctk.CTkProgressBar(frame)
+                    self.l_trigger.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+
+                def trigger_right():
+                    frame = ctk.CTkFrame(self.trigger_frame)
+                    frame.grid(column=1, row=1, padx=self.comp_pad, pady=self.comp_pad)
+
+                    label = ctk.CTkLabel(frame, text="Right")
+                    label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
+
+                    self.r_stick = ctk.CTkProgressBar(frame)
+                    self.r_stick.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+
+                trigger_left()
+                trigger_right()
+
+            threshold_slider()
+            config_buttons()
+            buttons()
+            joysticks()
+            trigger()
+        controller()
 
 setup = Setup()
