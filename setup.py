@@ -1,17 +1,9 @@
-import os
+import vars
 
-try:
-    import customtkinter as ctk
-    import configparser
-    from PIL import Image
-
-except ImportError as e:
-    print(f"Error: {e}\nInstalling required packages...")
-    os.system("pip install -r requirements.txt")
-    # Optionally re-import after installation
-    import customtkinter as ctk
-    import configparser
-    from PIL import Image
+import configparser
+import customtkinter as ctk
+from PIL import Image
+import cv2
 
 class Setup:
     def __init__(self):
@@ -36,6 +28,7 @@ class Setup:
         self.robot()
         self.debug_switch()
         self.tabview_frame()
+        self.update_bars()
         self.app.mainloop()
 
         try:
@@ -49,26 +42,18 @@ class Setup:
         with open("config.ini", "w") as configfile:
             self.config.write(configfile)
 
-    def change_bar(self, name, value):
+    def update_bars(self):
         max_speed = int(self.config["ROBOT"]["max_speed"])
-        # Normalize value based on max_speed
-        normalized_value = (value + max_speed) / (2 * max_speed)  # Scales value between 0 and 1
-
+        turn_speed = int(self.config["ROBOT"]["turn_speed"])
         # Update the corresponding progress bar based on the name provided
-        if name == "l_x_stick":
-            self.l_x_stick.set(normalized_value)
-        elif name == "l_y_stick":
-            self.l_y_stick.set(normalized_value)
-        elif name == "r_x_stick":
-            self.r_x_stick.set(normalized_value)
-        elif name == "r_y_stick":
-            self.r_y_stick.set(normalized_value)
-        elif name == "l_trigger":
-            self.l_trigger.set(normalized_value)
-        elif name == "r_stick":
-            self.r_stick.set(normalized_value)
-        else:
-            print(f"Unknown bar name: {name}")
+        self.l_x_stick.set((vars.joy_l_x + max_speed) / (2 * max_speed))
+        self.l_y_stick.set((vars.joy_l_y + max_speed) / (2 * max_speed))
+        self.r_x_stick.set((vars.joy_r_x + max_speed) / (2 * max_speed))
+        self.r_y_stick.set((vars.joy_r_y + max_speed) / (2 * max_speed))
+        self.l_trigger.set((vars.tr_l + turn_speed) / (2 * turn_speed))
+        self.r_trigger.set((vars.tr_r + turn_speed) / (2 * turn_speed))
+
+        self.app.after(100, self.update_bars)
 
     def ip_config(self):
         frame = ctk.CTkFrame(self.app)
@@ -191,14 +176,36 @@ class Setup:
             frame = ctk.CTkFrame(self.right_frame)
             frame.grid(row=3, padx=self.comp_pad, pady=self.comp_pad)
 
-            self.video_label = ctk.CTkLabel(frame, text="Initializing video stream...")
+            self.video_label = ctk.CTkLabel(frame, text="")
             self.video_label.pack()
 
-            if self.debug:
-                placeholder_image = Image.open("test.png")  # Load your image file here
-                placeholder_imgtk = ctk.CTkImage(placeholder_image, size=(160, 90))
-                self.video_label.configure(image=placeholder_imgtk, text="")
-                self.video_label.image = placeholder_imgtk
+            def update_frame():
+                if not self.debug:
+                    img = vars.ep_camera.read_cv2_image(strategy="newest")
+                    if img is not None:
+                        # Convert the frame to RGB (OpenCV uses BGR by default)
+                        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        img_pil = Image.fromarray(img)  # Convert to PIL image
+
+                        # Convert to CTkImage for display in CustomTkinter
+                        imgtk = ctk.CTkImage(img_pil, size=(160, 90))  # Adjust the size as necessary
+
+                        # Update the video label with the new frame
+                        self.video_label.configure(image=imgtk)
+                        self.video_label.imgtk = imgtk  # Keep a reference to avoid garbage collection
+                    else:
+                        # Display an error message or a placeholder image
+                        self.video_label.configure(text="Error: unable to read video stream")
+                else:
+                    placeholder_image = Image.open("test.png")  # Load your image file here
+                    placeholder_imgtk = ctk.CTkImage(placeholder_image, size=(160, 90))
+                    self.video_label.configure(image=placeholder_imgtk)
+                    self.video_label.image = placeholder_imgtk
+
+                # Call this function again after a delay (e.g., 100ms)
+                self.video_label.after(100, update_frame)
+
+            update_frame()
 
         max_speed()
         max_distance()
@@ -319,8 +326,8 @@ class Setup:
                     label = ctk.CTkLabel(frame, text="Right")
                     label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-                    self.r_stick = ctk.CTkProgressBar(frame)
-                    self.r_stick.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                    self.r_trigger = ctk.CTkProgressBar(frame)
+                    self.r_trigger.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
                 trigger_left()
                 trigger_right()
@@ -333,6 +340,3 @@ class Setup:
         controller()
 
     # Example usage:
-setup = Setup()
-setup.change_bar("l_x_stick", 100)
-setup.change_bar("r_y_stick", 200)
