@@ -1,23 +1,15 @@
 import os
-import setup
-import robot_controll as rc
-import vars
 
-import controller
+import configparser
+import customtkinter as ctk
+from PIL import Image
 import threading
 import asyncio
 
-# Install required packages if not available
-try:
-    import customtkinter as ctk
-    import configparser
-    from PIL import Image
-except ImportError as e:
-    print(f"Error: {e}\nInstalling required packages...")
-    os.system("pip install -r requirements.txt")
-    import customtkinter as ctk
-    import configparser
-    from PIL import Image
+import setup
+import robot_controll as rc
+import controller
+import vars
 
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -34,15 +26,15 @@ if not config["GENERAL"]["debug"]:
     vars.ep_camera = vars.ep_robot.camera
     vars.ep_camera.start_video_stream(display=False)
 
-# Function to run the async joystick reader in a separate thread
 def run_joystick_reader():
+    """makes async controller function runable in sync funtion"""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(controller.read())  # Assuming read() is your async function
+    loop.run_until_complete(controller.read())
 
 # Create and start the thread for joystick reading
 joystick_thread = threading.Thread(target=run_joystick_reader)
 joystick_thread.start()
 
-# Start the main setup
+# Start the main setup gui
 setup.Setup()

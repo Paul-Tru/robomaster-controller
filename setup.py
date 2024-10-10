@@ -6,15 +6,20 @@ from PIL import Image
 import cv2
 
 class Setup:
+    """gui to make settings for the robot and controller"""
+    """and to test basic functionality"""
+
     def __init__(self):
-        self.l_x_stick = None
+        # read config.ini
         self.config = configparser.ConfigParser()
-
         self.config.read("config.ini")
+        
+        # get debug from config.ini
         self.debug = self.config.getboolean("GENERAL", "debug")
-        ctk.set_appearance_mode(self.config["GUI"]["appearance"])
 
+        # set values for ctk window
         self.app = ctk.CTk()
+        ctk.set_appearance_mode(self.config["GUI"]["appearance"])
         self.app.geometry(self.config["GUI"]["geometry"])
         if not self.debug:
             self.app.title("Titan Setup")
@@ -24,6 +29,7 @@ class Setup:
         self.frame_font = eval(self.config["GUI"]["frame_font"])
         self.comp_pad = self.config["GUI"]["component_pad"]
 
+        # calling functions
         self.ip_config()
         self.robot()
         self.debug_switch()
@@ -32,20 +38,18 @@ class Setup:
         self.start_main_btn()
         self.app.mainloop()
 
-        try:
-            self.rob_ip = self.config["IP"]["rob"]
-            self.pc_ip = self.config["IP"]["pc"]
-        except KeyError:
-            self.rob_ip = None
-            self.pc_ip = None
-
     def save_config(self):
+        """save values into config.ini after being changed"""
         with open("config.ini", "w") as configfile:
             self.config.write(configfile)
 
     def update_bars(self):
+        """updating values in progressbars from controller input"""
+
+        # getting nessesary values from config file
         max_speed = int(self.config["ROBOT"]["max_speed"])
         turn_speed = int(self.config["ROBOT"]["turn_speed"])
+
         # Update the corresponding progress bar based on the name provided
         self.l_x_stick.set((vars.joy_l_x + max_speed) / (2 * max_speed))
         self.l_y_stick.set((vars.joy_l_y + max_speed) / (2 * max_speed))
@@ -54,28 +58,37 @@ class Setup:
         self.l_trigger.set(-(vars.tr_l + turn_speed) / (2 * turn_speed))
         self.r_trigger.set(-(vars.tr_r + turn_speed) / (2 * turn_speed))
 
+        # updating every 10ms
         self.app.after(10, self.update_bars)
 
     def ip_config(self):
+        """frame to change connect settings"""
+
+        # creating frame
         frame = ctk.CTkFrame(self.app)
         frame.grid(column=0, row=0, sticky="n", padx=self.frame_pad, pady=self.frame_pad)
 
+        # creating label
         label = ctk.CTkLabel(frame, text="Wifi", font=self.frame_font)
         label.pack(padx=self.comp_pad, pady=self.comp_pad)
 
+        # read values
         rob_ip_ini = self.config.get("IP", "rob", fallback="")
         pc_ip_ini = self.config.get("IP", "pc", fallback="")
 
+        # create entrys for ip addresses
         self.entry_rob_ip = ctk.CTkEntry(frame, placeholder_text=rob_ip_ini)
         self.entry_rob_ip.pack(padx=self.comp_pad, pady=self.comp_pad)
 
         self.entry_pc_ip = ctk.CTkEntry(frame, placeholder_text=pc_ip_ini)
         self.entry_pc_ip.pack(padx=self.comp_pad, pady=self.comp_pad)
 
+        # setting default connect status
         status = ctk.CTkLabel(frame, text="❌ Not Connected")
         status.pack(padx=self.comp_pad, pady=self.comp_pad)
 
         def get_values():
+            """get values from entrys"""
             rob_ip = self.entry_rob_ip.get()
             pc_ip = self.entry_pc_ip.get()
             if rob_ip is not None:
@@ -86,11 +99,15 @@ class Setup:
                 self.pc_ip = pc_ip_ini
                 
             try:
+                # import here to make it runable in debug mode
                 import robot_controll as rc
+
+                # check if computer is connected to the robot
                 check = rc.check_conn(self.rob_ip, self.pc_ip)
             except:
                 check = False
 
+            # change status
             if check:
                 frame.configure(fg_color="#302c2c")
                 status.configure(text="✅ Connected")
@@ -101,14 +118,17 @@ class Setup:
                 frame.configure(fg_color="darkred")
                 status.configure(text="❌ Not Connected")
 
+        # button to get the values from entry
         self.get_btn = ctk.CTkButton(frame, text="Get", command=get_values)
         self.get_btn.pack(padx=15, pady=10)
 
     def debug_switch(self):
+        """turn debug mode on or off"""
         frame = ctk.CTkFrame(self.app)
         frame.grid(column=0, row=1, sticky="n", padx=self.comp_pad, pady=self.comp_pad)
 
         def change():
+            """change the config according to value"""
             value = switch.get()
             if value == 0:
                 self.config["GENERAL"]["debug"] = "True"
@@ -117,58 +137,85 @@ class Setup:
             self.save_config()
             print(value)
 
+        # create switch
         switch = ctk.CTkSwitch(frame, text="Debug", command=change)
         switch.pack(padx=self.comp_pad, pady=self.comp_pad)
 
+        # set switch to current state of debug
         if self.debug:
             switch.select()
         else:
             switch.deselect()
 
     def robot(self):
+        """show information about the robot"""
+
+        # crete frame on the right
         self.right_frame = ctk.CTkFrame(self.app)
         self.right_frame.grid(column=3, row=0, rowspan=2, sticky="n", padx=self.frame_pad, pady=self.frame_pad)
 
+        # create title
         label = ctk.CTkLabel(self.right_frame, text="Robot", font=self.frame_font)
         label.grid(row=0, padx=self.comp_pad, pady=self.comp_pad)
 
         def max_speed():
+            """create slider in frame to change the max speed"""
+            """in repeats per minute"""
+            
+            # create frame
             frame = ctk.CTkFrame(self.right_frame)
             frame.grid(row=1, padx=self.comp_pad, pady=self.comp_pad)
 
+            # get value
             max_speed = self.config["ROBOT"]["max_speed"]
 
+            # add text
             label = ctk.CTkLabel(frame, text=f"Max Speed: {max_speed} rpm")
             label.grid(padx=self.comp_pad, pady=self.comp_pad)
 
 
             def get(value):
+                """get value from slider"""
+                """shows it and writes it into config"""
+
                 max_speed = int(value)  # Slider value is passed automatically
                 label.configure(text=f"Max Speed: {max_speed} rpm")  # Update label with formatted value
+
+                # save value
                 self.config["ROBOT"]["max_speed"] = str(max_speed)
                 self.save_config()
                 print("Max Speed: " + str(max_speed))
 
+            # configure slider
             self.max_speed_slider = ctk.CTkSlider(frame, number_of_steps=10, to=5000, command=get)
             self.max_speed_slider.grid(padx=self.comp_pad, pady=self.comp_pad)
             self.max_speed_slider.set(int(max_speed))
 
         def max_distance():
+            """creates frame to change value"""
+            """when to stop in front of an obstacle"""
+
+            # create frame
             frame = ctk.CTkFrame(self.right_frame)
             frame.grid(row=2, padx=self.comp_pad, pady=self.comp_pad)
 
+            # get value
             max_distance = self.config["ROBOT"]["max_distance"]
 
+            # create text
             label = ctk.CTkLabel(frame, text=f"Max Distance: {max_distance} cm")
             label.grid(padx=self.comp_pad, pady=self.comp_pad)
 
             def get(value):
+                """get value from slider"""
+                """print it out change config"""
                 max_distance = int(value)  # Slider value is passed automatically
                 label.configure(text=f"Max Distance: {max_distance} cm")  # Update label with formatted value
                 self.config["ROBOT"]["max_distance"] = str(max_distance)
                 self.save_config()
                 print("Max Speed: " + str(max_distance))
 
+            # create slider
             slider = ctk.CTkSlider(frame, number_of_steps=6, to=300, command=get)
             slider.grid(padx=self.comp_pad, pady=self.comp_pad)
             slider.set(int(max_distance))
