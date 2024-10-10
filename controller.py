@@ -41,13 +41,13 @@ async def read():
                         axis = event.axis
                         print(f"Axis {event.axis} value: {value}")
                         if axis == 1:
-                            vars.joy_l_x = value
-                        elif axis == 0:
                             vars.joy_l_y = value
+                        elif axis == 0:
+                            vars.joy_l_x = value
                         elif axis == 3:
-                            vars.joy_r_x = value
-                        elif axis == 2:
                             vars.joy_r_y = value
+                        elif axis == 2:
+                            vars.joy_r_x = value
                         elif axis == 4:  # Turn left
                             value = round(-value * MAX)
                             value = round((-value + MAX) / 2)  # Map value to [0, 1000]
@@ -66,11 +66,20 @@ async def read():
                             vars.tr_l = 0
                             vars.tr_r = 0
 
-                elif event.type == pygame.JOYBUTTONDOWN:
+                button_states = {}
+
+                if event.type == pygame.JOYBUTTONDOWN:
+                    button_name = f"vars.btn_{event.button}"  # Construct button name directly
+                    button_states[button_name] = True
                     print(f"Button {event.button} pressed")
 
-                elif event.type == pygame.JOYBUTTONUP:
+                if event.type == pygame.JOYBUTTONUP:
+                    #button_name = f"vars.btn_{event.button}"  # Construct button name directly for release
+                    #button_states[button_name] = False  # Set the button state to released
+                    setattr(vars, f'btn_{event.button}', False)
                     print(f"Button {event.button} released")
+
+
 
                 elif event.type == pygame.JOYHATMOTION:
                     print(f"Hat {event.hat} value: {event.value}")

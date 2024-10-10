@@ -51,8 +51,8 @@ class Setup:
         self.l_y_stick.set((vars.joy_l_y + max_speed) / (2 * max_speed))
         self.r_x_stick.set((vars.joy_r_x + max_speed) / (2 * max_speed))
         self.r_y_stick.set((vars.joy_r_y + max_speed) / (2 * max_speed))
-        self.l_trigger.set((vars.tr_l + turn_speed) / (2 * turn_speed))
-        self.r_trigger.set((vars.tr_r + turn_speed) / (2 * turn_speed))
+        self.l_trigger.set(-(vars.tr_l + turn_speed) / (2 * turn_speed))
+        self.r_trigger.set(-(vars.tr_r + turn_speed) / (2 * turn_speed))
 
         self.app.after(10, self.update_bars)
 
@@ -149,9 +149,9 @@ class Setup:
                 self.save_config()
                 print("Max Speed: " + str(max_speed))
 
-            slider = ctk.CTkSlider(frame, number_of_steps=10, to=5000, command=get)
-            slider.grid(padx=self.comp_pad, pady=self.comp_pad)
-            slider.set(int(max_speed))
+            self.max_speed_slider = ctk.CTkSlider(frame, number_of_steps=10, to=5000, command=get)
+            self.max_speed_slider.grid(padx=self.comp_pad, pady=self.comp_pad)
+            self.max_speed_slider.set(int(max_speed))
 
         def max_distance():
             frame = ctk.CTkFrame(self.right_frame)
@@ -270,16 +270,32 @@ class Setup:
                 slider.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
                 slider.set(int(threshold))
 
-            def config_buttons():
-                def configure():
-                    print("pressed")
-
-                button = ctk.CTkButton(self.controller_frame, text="Configure", command=configure)
-                button.grid(column=0, row=1, sticky="s", padx=self.comp_pad, pady=self.comp_pad)
-
             def buttons():
-                self.buttons_text = ctk.CTkTextbox(self.controller_frame)
-                self.buttons_text.grid(column=1, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                buttons_frame = ctk.CTkFrame(self.controller_frame)
+                buttons_frame.grid(column=1, row=1, padx=self.comp_pad, pady=self.comp_pad)
+
+                a_frame = ctk.CTkFrame(buttons_frame)
+                a_frame.grid(column=0, row=0, sticky="nsew")  # Use sticky to expand the frame
+
+                b_frame = ctk.CTkFrame(buttons_frame)
+                b_frame.grid(column=1, row=0, sticky="nsew")  # Use sticky to expand the frame
+
+                # Configure rows and columns to ensure even spacing
+                buttons_frame.grid_columnconfigure(0, weight=1)
+                buttons_frame.grid_columnconfigure(1, weight=1)
+                buttons_frame.grid_rowconfigure(list(range(6)), weight=1)  # Adjust weights for the first 6 rows
+                buttons_frame.grid_rowconfigure(list(range(6, 12)), weight=1)  # Adjust weights for the second 6 rows
+
+                for i in range(12):
+                    value = getattr(vars, f'btn_{i}', None)  # Assuming btn_0, btn_1, ... are attributes of self
+                    label_text = f"{i}: {value}" if value is not None else f"{i}: Not set"
+                    label = ctk.CTkLabel(buttons_frame, text=label_text)
+
+                    column = 0 if i < 6 else 1  # Use 0 for the first 6, 1 for the next 6
+                    row = i if i < 6 else i - 6  # Row remains the same for first 6, adjusted for the second 6
+                    label.grid(row=row, column=column, sticky="ew")  # Expand label to fill available space
+
+                self.controller_frame.after(20, buttons)
 
             def joysticks():
                 self.js_frame = ctk.CTkFrame(self.controller_frame)
@@ -348,7 +364,6 @@ class Setup:
                 trigger_right()
 
             threshold_slider()
-            config_buttons()
             buttons()
             joysticks()
             trigger()
