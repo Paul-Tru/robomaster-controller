@@ -1,2 +1,2 @@
 # robomaster-controller
-Controlls the DJI Robomaster with a Controller
+Controls the DJI Robomaster with a Controller or Keyboard

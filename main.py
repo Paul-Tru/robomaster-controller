@@ -1,5 +1,3 @@
-import os
-
 import configparser
 import threading
 import asyncio

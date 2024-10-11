@@ -2,12 +2,13 @@ import vars
 
 import configparser
 import customtkinter as ctk
+from CTkMessagebox import CTkMessagebox
 from PIL import Image
 import cv2
 
 class Setup:
-    """gui to make settings for the robot and controller"""
-    """and to test basic functionality"""
+    """gui to make settings for the robot and controller
+    and to test basic functionality"""
 
     def __init__(self):
         # read config.ini
@@ -48,15 +49,15 @@ class Setup:
 
         # getting nessesary values from config file
         max_speed = int(self.config["ROBOT"]["max_speed"])
-        turn_speed = int(self.config["ROBOT"]["turn_speed"])
+        trigger = int(self.config["CONTROLLER"]["trigger"])
 
         # Update the corresponding progress bar based on the name provided
         self.l_x_stick.set((vars.joy_l_x + max_speed) / (2 * max_speed))
         self.l_y_stick.set((vars.joy_l_y + max_speed) / (2 * max_speed))
         self.r_x_stick.set((vars.joy_r_x + max_speed) / (2 * max_speed))
         self.r_y_stick.set((vars.joy_r_y + max_speed) / (2 * max_speed))
-        self.l_trigger.set(-(vars.tr_l + turn_speed) / (2 * turn_speed))
-        self.r_trigger.set(-(vars.tr_r + turn_speed) / (2 * turn_speed))
+        self.l_trigger.set(-(vars.tr_l + trigger) / (2 * trigger))
+        self.r_trigger.set(-(vars.tr_r + trigger) / (2 * trigger))
 
         # updating every 10ms
         self.app.after(10, self.update_bars)
@@ -88,22 +89,22 @@ class Setup:
         status.pack(padx=self.comp_pad, pady=self.comp_pad)
 
         def get_values():
-            """get values from entrys"""
+            """get values from entries and write them into config"""
+            # get values
             rob_ip = self.entry_rob_ip.get()
             pc_ip = self.entry_pc_ip.get()
             if rob_ip is not None:
-                self.rob_ip = rob_ip
-                self.pc_ip = pc_ip
-            else:
-                self.rob_ip = rob_ip_ini
-                self.pc_ip = pc_ip_ini
-                
+                # use entry input when not none and write it into config
+                self.config["IP"]["rob"] = rob_ip
+                self.config["IP"]["pc"] = pc_ip
+
             try:
-                # import here to make it runable in debug mode
+                # import here to make it runnable in debug mode
                 import robot_controll as rc
 
                 # check if computer is connected to the robot
-                check = rc.check_conn(self.rob_ip, self.pc_ip)
+                check = rc.check_conn()
+
             except:
                 check = False
 
@@ -259,6 +260,7 @@ class Setup:
                         # Update the video label with the new frame
                         self.video_label.configure(image=imgtk)
                         self.video_label.imgtk = imgtk  # Keep a reference to avoid garbage collection
+
                     except:
                         # Display an error message or a placeholder image
                         self.video_label.configure(text="Error: unable to read video stream", fg="darkred")
