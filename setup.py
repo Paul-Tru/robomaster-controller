@@ -207,8 +207,7 @@ class Setup:
             label.grid(padx=self.comp_pad, pady=self.comp_pad)
 
             def get(value):
-                """get value from slider"""
-                """print it out change config"""
+                """get value from sliders, print it out and change config"""
                 max_distance = int(value)  # Slider value is passed automatically
                 label.configure(text=f"Max Distance: {max_distance} cm")  # Update label with formatted value
                 self.config["ROBOT"]["max_distance"] = str(max_distance)
@@ -221,6 +220,7 @@ class Setup:
             slider.set(int(max_distance))
 
         def curr_distance():
+            """get current distance from distance sensor"""
             frame = ctk.CTkFrame(self.right_frame)
             frame.grid(row=3, sticky="nsew", padx=self.comp_pad, pady=self.comp_pad)
 
@@ -228,6 +228,7 @@ class Setup:
             label.grid(padx=self.comp_pad, pady=self.comp_pad)
 
             def update():
+                """update distance label"""
                 label.configure(text=f"Distance: {vars.distance} cm")
                 frame.after(20, update)
 
@@ -235,6 +236,7 @@ class Setup:
                 update()
 
         def video():
+            """shows video preview or test picture"""
             frame = ctk.CTkFrame(self.right_frame)
             frame.grid(row=4, padx=self.comp_pad, pady=self.comp_pad)
 
@@ -242,7 +244,9 @@ class Setup:
             self.video_label.pack()
 
             def update_frame():
+                """update the video frame"""
                 if not self.debug:
+                    # get the current frame from the robot
                     img = vars.ep_camera.read_cv2_image(strategy="newest")
                     try:
                         # Convert the frame to RGB (OpenCV uses BGR by default)
@@ -259,6 +263,7 @@ class Setup:
                         # Display an error message or a placeholder image
                         self.video_label.configure(text="Error: unable to read video stream", fg="darkred")
                 else:
+                    # show debug picture
                     placeholder_imgtk = ctk.CTkImage(vars.test_png, size=(160, 90))
                     self.video_label.configure(image=placeholder_imgtk)
                     self.video_label.image = placeholder_imgtk
@@ -274,6 +279,7 @@ class Setup:
         video()
 
     def tabview_frame(self):
+        """split controller and keyboard frame """
         self.tabview = ctk.CTkTabview(master=self.app)
         self.tabview.grid(column=1, columnspan=2, row=0, rowspan=3, sticky="n", padx=self.frame_pad, pady=self.frame_pad)
 
@@ -282,133 +288,158 @@ class Setup:
         self.tabview.set("Controller")  # set currently visible tab
 
         def controller():
+            """shows information from controller"""
+            # create frame
             self.controller_frame = ctk.CTkFrame(self.tabview.tab("Controller"))
             self.controller_frame.grid(padx=self.comp_pad, pady=self.comp_pad)
 
+            # create label
             label = ctk.CTkLabel(self.controller_frame, text="Controller", font=self.frame_font)
             label.grid(column=0, columnspan=2, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
             def threshold_slider():
+                """create slider in frame to change and show joystick threshold"""
+                # create frame
                 frame = ctk.CTkFrame(self.controller_frame)
                 frame.grid(column=0, row=1, sticky="n", padx=self.comp_pad, pady=self.comp_pad)
 
+                # get values
                 threshold = self.config["CONTROLLER"]["threshold"]
                 max_speed = self.config["ROBOT"]["max_speed"]
+
+                # calculate max slider value
                 to = int(int(max_speed) / 2)
+
+                # calculate steps that change the value by 50
                 steps = int(to / 50)
 
+                # calculate threshold percentage
                 percent = round(int(threshold) / int(max_speed) * 100)
+
+                # show results
                 label = ctk.CTkLabel(frame, text=f"Threshold: {threshold}/{max_speed}\n\n"
                                                  f"{percent}%")
                 label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-                def get(value):
-                    threshold = int(value)
+                def get(threshold):
+                    """update threshold frame"""
                     max_speed = self.config["ROBOT"]["max_speed"]
                     percent = round(int(threshold) / int(max_speed) * 100)
+                    # update text
                     label.configure(text=f"Threshold: {threshold}/{max_speed}\n\n"
                                          f"{str(percent)}%")
+
+                    # save to config
                     self.config["CONTROLLER"]["threshold"] = str(threshold)
                     self.save_config()
+
+                    # configure slider
                     slider.configure(to=int(max_speed) / 2, number_of_steps=int(to / 50))
                     print("Threshold: " + str(threshold))
 
+                # create slider
                 slider = ctk.CTkSlider(frame, number_of_steps=steps, to=to, command=get)
                 slider.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
                 slider.set(int(threshold))
 
             def buttons():
+                """show buttons pressed in 2 columns in one frame"""
+                # create frame
                 buttons_frame = ctk.CTkFrame(self.controller_frame)
-                buttons_frame.grid(column=1, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                buttons_frame.grid(column=1, row=1, sticky="ew", padx=self.comp_pad, pady=self.comp_pad)
 
-                a_frame = ctk.CTkFrame(buttons_frame)
-                a_frame.grid(column=0, row=0, sticky="nsew")  # Use sticky to expand the frame
-
-                b_frame = ctk.CTkFrame(buttons_frame)
-                b_frame.grid(column=1, row=0, sticky="nsew")  # Use sticky to expand the frame
-
-                # Configure rows and columns to ensure even spacing
+                # Configure columns to ensure even spacing
                 buttons_frame.grid_columnconfigure(0, weight=1)
                 buttons_frame.grid_columnconfigure(1, weight=1)
-                buttons_frame.grid_rowconfigure(list(range(6)), weight=1)  # Adjust weights for the first 6 rows
-                buttons_frame.grid_rowconfigure(list(range(6, 12)), weight=1)  # Adjust weights for the second 6 rows
 
+                # Configure rows to ensure even spacing
+                for i in range(6):
+                    buttons_frame.grid_rowconfigure(i, weight=1)
+
+                # create label for each button
                 for i in range(12):
-                    value = getattr(vars, f'btn_{i}', None)  # Assuming btn_0, btn_1, ... are attributes of self
-                    label_text = f"{i}: {value}" if value is not None else f"{i}: Not set"
+                    # get value for a button
+                    value = getattr(vars, f'btn_{i}')
+
+                    # create label with text
+                    label_text = f"{i}: {value}"
                     label = ctk.CTkLabel(buttons_frame, text=label_text)
 
                     column = 0 if i < 6 else 1  # Use 0 for the first 6, 1 for the next 6
-                    row = i if i < 6 else i - 6  # Row remains the same for first 6, adjusted for the second 6
-                    label.grid(row=row, column=column, sticky="ew")  # Expand label to fill available space
+                    row = i if i < 6 else i - 6  # Adjust row index for the second column
+                    label.grid(row=row, column=column, sticky="ew", padx=5, pady=5)  # Add padding for better spacing
 
-                self.controller_frame.after(20, buttons)
+                # update button frame very 20ms to show pressed buttons
+                # self.controller_frame.after(20, buttons)
 
             def joysticks():
+                """show joystick values"""
+                # create frame
                 self.js_frame = ctk.CTkFrame(self.controller_frame)
                 self.js_frame.grid(column=0, columnspan=2, row=2, padx=self.comp_pad, pady=self.comp_pad)
 
+                # create label
                 label = ctk.CTkLabel(self.js_frame, text="Joystick", font=self.frame_font)
                 label.grid(column=0, columnspan=2, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-                def joystick_left():
+                def create_joystick(side:str, column:int):
+                    """Create joystick display for either left or right side"""
+                    # Create frame
                     frame = ctk.CTkFrame(self.js_frame)
-                    frame.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                    frame.grid(column=column, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-                    label = ctk.CTkLabel(frame, text="Left")
+                    # Create title
+                    label = ctk.CTkLabel(frame, text=side)
                     label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-                    self.l_x_stick = ctk.CTkProgressBar(frame)
-                    self.l_x_stick.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                    # Create x-level value progressbar
+                    if side == "Left":
+                        self.l_x_stick = ctk.CTkProgressBar(frame)
+                        self.l_x_stick.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-                    self.l_y_stick = ctk.CTkProgressBar(frame)
-                    self.l_y_stick.grid(column=0, row=2, padx=self.comp_pad, pady=self.comp_pad)
+                        # Create y-level value progressbar
+                        self.l_y_stick = ctk.CTkProgressBar(frame)
+                        self.l_y_stick.grid(column=0, row=2, padx=self.comp_pad, pady=self.comp_pad)
 
-                def joystick_right():
-                    frame = ctk.CTkFrame(self.js_frame)
-                    frame.grid(column=1, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                    elif side == "Right":
+                        self.r_x_stick = ctk.CTkProgressBar(frame)
+                        self.r_x_stick.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-                    label = ctk.CTkLabel(frame, text="Right")
-                    label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
+                        self.r_y_stick = ctk.CTkProgressBar(frame)
+                        self.r_y_stick.grid(column=0, row=2, padx=self.comp_pad, pady=self.comp_pad)
 
-                    self.r_x_stick = ctk.CTkProgressBar(frame)
-                    self.r_x_stick.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                # Call for left joystick
+                create_joystick("Left", 0)
 
-                    self.r_y_stick = ctk.CTkProgressBar(frame)
-                    self.r_y_stick.grid(column=0, row=2, padx=self.comp_pad, pady=self.comp_pad)
-
-                joystick_left()
-                joystick_right()
+                # Call for right joystick
+                create_joystick("Right", 1)
 
             def trigger():
+                """show trigger values"""
                 self.trigger_frame = ctk.CTkFrame(self.controller_frame)
                 self.trigger_frame.grid(column=0, columnspan=2, row=3, padx=self.comp_pad, pady=self.comp_pad)
 
                 label = ctk.CTkLabel(self.trigger_frame, text="Trigger", font=self.frame_font)
                 label.grid(column=0, columnspan=2, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-                def trigger_left():
+                def trigger_create(side:str, column:int):
+                    """Create trigger display for either left or right side"""
                     frame = ctk.CTkFrame(self.trigger_frame)
-                    frame.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                    frame.grid(column=column, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-                    label = ctk.CTkLabel(frame, text="Left")
+                    label = ctk.CTkLabel(frame, text=side)
                     label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
 
-                    self.l_trigger = ctk.CTkProgressBar(frame)
-                    self.l_trigger.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                    if side == "Left":
+                        self.l_trigger = ctk.CTkProgressBar(frame)
+                        self.l_trigger.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-                def trigger_right():
-                    frame = ctk.CTkFrame(self.trigger_frame)
-                    frame.grid(column=1, row=1, padx=self.comp_pad, pady=self.comp_pad)
+                    elif side == "Right":
+                        self.r_trigger = ctk.CTkProgressBar(frame)
+                        self.r_trigger.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
 
-                    label = ctk.CTkLabel(frame, text="Right")
-                    label.grid(column=0, row=0, padx=self.comp_pad, pady=self.comp_pad)
-
-                    self.r_trigger = ctk.CTkProgressBar(frame)
-                    self.r_trigger.grid(column=0, row=1, padx=self.comp_pad, pady=self.comp_pad)
-
-                trigger_left()
-                trigger_right()
+                trigger_create("Left", 0)
+                trigger_create("Right", 1)
 
             threshold_slider()
             buttons()
@@ -417,7 +448,10 @@ class Setup:
         controller()
 
     def start_main_btn(self):
+        """create button to start the main gui"""
+
         def start():
+            """start main gui"""
             pass
 
         btn = ctk.CTkButton(self.app, text="Start", command=start)

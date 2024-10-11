@@ -1,15 +1,20 @@
 from PIL import Image
 
+"""file to store global variables"""
+
 # Controller
+# Joystick
 joy_l_x:int = 0
 joy_l_y:int = 0
 
 joy_r_x:int = 0
 joy_r_y:int = 0
 
+# Trigger
 tr_l:int = 0
 tr_r:int = 0
 
+# Buttons
 btn_0 = False
 btn_1 = False
 btn_2 = False

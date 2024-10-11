@@ -1,8 +1,6 @@
 import os
 
 import configparser
-import customtkinter as ctk
-from PIL import Image
 import threading
 import asyncio
 
@@ -18,7 +16,7 @@ rob_ip = config["IP"]["rob"]
 pc_ip = config["IP"]["pc"]
 
 if not config["GENERAL"]["debug"]:
-    from robomaster import robot, camera
+    from robomaster import robot
     robot.config.ROBOT_IP_STR = rob_ip
     robot.config.LOCAL_IP_STR = pc_ip
     vars.ep_robot = robot.Robot()
@@ -27,7 +25,7 @@ if not config["GENERAL"]["debug"]:
     vars.ep_camera.start_video_stream(display=False)
 
 def run_joystick_reader():
-    """makes async controller function runable in sync funtion"""
+    """makes async controller function runnable in sync function"""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(controller.read())
