@@ -30,12 +30,15 @@ class Setup:
         self.frame_font = eval(self.config["GUI"]["frame_font"])
         self.comp_pad = self.config["GUI"]["component_pad"]
 
+        # list to update button values in a frame
+        self.btn_label_ = []
+
         # calling functions
         self.ip_config()
         self.robot()
         self.debug_switch()
         self.tabview_frame()
-        self.update_bars()
+        self.update_values()
         self.start_main_btn()
         self.app.mainloop()
 
@@ -44,7 +47,7 @@ class Setup:
         with open("config.ini", "w") as configfile:
             self.config.write(configfile)
 
-    def update_bars(self):
+    def update_values(self):
         """updating values in progressbars from controller input"""
 
         # getting nessesary values from config file
@@ -56,11 +59,17 @@ class Setup:
         self.l_y_stick.set((vars.joy_l_y + max_speed) / (2 * max_speed))
         self.r_x_stick.set((vars.joy_r_x + max_speed) / (2 * max_speed))
         self.r_y_stick.set((vars.joy_r_y + max_speed) / (2 * max_speed))
+
         self.l_trigger.set(-(vars.tr_l + trigger) / (2 * trigger))
         self.r_trigger.set(-(vars.tr_r + trigger) / (2 * trigger))
 
+        for i in range(12):
+            value = getattr(vars, f'btn_{i}')
+            label_text = f"{i}: {value}"
+            self.btn_label_[i].configure(text=label_text)
+
         # updating every 10ms
-        self.app.after(10, self.update_bars)
+        self.app.after(10, self.update_values)
 
     def ip_config(self):
         """frame to change connect settings"""
@@ -188,7 +197,7 @@ class Setup:
                 print("Max Speed: " + str(max_speed))
 
             # configure slider
-            self.max_speed_slider = ctk.CTkSlider(frame, number_of_steps=10, to=5000, command=get)
+            self.max_speed_slider = ctk.CTkSlider(frame, number_of_steps=10, to=1000, command=get)
             self.max_speed_slider.grid(padx=self.comp_pad, pady=self.comp_pad)
             self.max_speed_slider.set(int(max_speed))
 
@@ -360,19 +369,15 @@ class Setup:
 
                 # create label for each button
                 for i in range(12):
-                    # get value for a button
-                    value = getattr(vars, f'btn_{i}')
-
                     # create label with text
-                    label_text = f"{i}: {value}"
-                    label = ctk.CTkLabel(buttons_frame, text=label_text)
+                    value = getattr(vars, f'btn_{i}')
+                    label = ctk.CTkLabel(buttons_frame, text=f"{i}: N/A")
+                    self.btn_label_.append(label) 
 
                     column = 0 if i < 6 else 1  # Use 0 for the first 6, 1 for the next 6
                     row = i if i < 6 else i - 6  # Adjust row index for the second column
                     label.grid(row=row, column=column, sticky="ew", padx=5, pady=5)  # Add padding for better spacing
 
-                # update button frame very 20ms to show pressed buttons
-                # self.controller_frame.after(20, buttons)
 
             def joysticks():
                 """show joystick values"""

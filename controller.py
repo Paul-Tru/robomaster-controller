@@ -1,6 +1,5 @@
 import pygame
 import configparser
-from CTkMessagebox import CTkMessagebox
 import asyncio
 
 import vars
@@ -96,10 +95,11 @@ async def read():
                 elif event.type == pygame.JOYHATMOTION:
                     print(f"Hat {event.hat} value: {event.value}")
 
+                print(button_states)
+
     else:
         # handle non-successful connection
         print("No joysticks connected")
-        show_warning()
 
 def quit():
     """stop controller program"""
@@ -109,12 +109,3 @@ def run_async_read():
     """make the async function runnable with sync function"""
     loop = asyncio.get_event_loop()
     loop.run_until_complete(read())
-
-
-def show_warning():
-    """Show retry/cancel warning when controller not connected"""
-    msg = CTkMessagebox(title="Controller", message="Unable to connect!",
-                        icon="warning", option_1="Cancel", option_2="Retry")
-
-    if msg.get() == "Retry":
-        run_async_read()
