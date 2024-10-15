@@ -30,5 +30,7 @@ btn_11 = False
 
 # Robot
 distance:int = 0
+ep_robot = None
+ep_sensor = None
 ep_camera = None
 test_png = Image.open("test.png")

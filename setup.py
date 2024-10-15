@@ -1,10 +1,13 @@
-import vars
+import time
 
 import configparser
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 from PIL import Image
 import cv2
+
+import vars
+import gui
 
 class Setup:
     """gui to make settings for the robot and controller
@@ -63,10 +66,10 @@ class Setup:
         self.l_trigger.set(-(vars.tr_l + trigger) / (2 * trigger))
         self.r_trigger.set(-(vars.tr_r + trigger) / (2 * trigger))
 
-        for i in range(12):
-            value = getattr(vars, f'btn_{i}')
-            label_text = f"{i}: {value}"
-            self.btn_label_[i].configure(text=label_text)
+        #for i in range(12):
+        #    value = getattr(vars, f'btn_{i}')
+        #    label_text = f"{i}: {value}"
+        #    self.btn_label_[i].configure(text=label_text)
 
         # updating every 10ms
         self.app.after(10, self.update_values)
@@ -256,15 +259,8 @@ class Setup:
             def update_frame():
                 """update the video frame"""
                 if not self.debug:
-                    # get the current frame from the robot
-                    img = vars.ep_camera.read_cv2_image(strategy="newest")
                     try:
-                        # Convert the frame to RGB (OpenCV uses BGR by default)
-                        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                        img_pil = Image.fromarray(img)  # Convert to PIL image
-
-                        # Convert to CTkImage for display in CustomTkinter
-                        imgtk = ctk.CTkImage(img_pil, size=(160, 90))  # Adjust the size as necessary
+                        imgtk = ctk.CTkImage(vars.ep_camera, size=(160, 90))  # Adjust the size as necessary
 
                         # Update the video label with the new frame
                         self.video_label.configure(image=imgtk)
@@ -272,7 +268,7 @@ class Setup:
 
                     except:
                         # Display an error message or a placeholder image
-                        self.video_label.configure(text="Error: unable to read video stream", fg="darkred")
+                        self.video_label.configure(text="Error: unable to read video stream", fg_color="darkred")
                 else:
                     # show debug picture
                     placeholder_imgtk = ctk.CTkImage(vars.test_png, size=(160, 90))
@@ -449,7 +445,7 @@ class Setup:
                 trigger_create("Right", 1)
 
             threshold_slider()
-            buttons()
+            # buttons()
             joysticks()
             trigger()
         controller()
@@ -459,7 +455,9 @@ class Setup:
 
         def start():
             """start main gui"""
-            pass
+            gui.MainGui()
+            time.sleep("1")
+            self.app.destroy()
 
         btn = ctk.CTkButton(self.app, text="Start", command=start)
         btn.grid(column=3, row=2)

@@ -9,3 +9,8 @@ def check_conn() -> bool:
     except Exception as e:
         print("Error while checking connection:", e)
         return False
+    
+def main():
+    while True:
+        #print(vars.distance)
+        pass
