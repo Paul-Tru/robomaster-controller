@@ -26,14 +26,21 @@ class MainGui:
         self.frame_font = eval(self.config["GUI"]["frame_font"])
         self.comp_pad = self.config["GUI"]["component_pad"]
 
+        # call functions
+        self.show_motor_value()
         self.video()
 
         self.app.mainloop()
 
+    def show_motor_value(self):
+        """shows value of each motor"""
+        self.motor_frame = ctk.CTkFrame(self.app)
+        self.motor_frame.grid(row=0, rowspan=2, padx=self.comp_pad, pady=self.comp_pad)
+
     def video(self):
         """shows video preview or test picture"""
         frame = ctk.CTkFrame(self.app)
-        frame.grid(row=4, padx=self.comp_pad, pady=self.comp_pad)
+        frame.grid(row=2, padx=self.comp_pad, pady=self.comp_pad)
 
         self.video_label = ctk.CTkLabel(frame, text="")
         self.video_label.pack()
@@ -42,10 +49,10 @@ class MainGui:
             """update the video frame"""
             if not self.debug:
                 try:
-                    imgtk = ctk.CTkImage(vars.ep_camera, size=(160, 90))  # Adjust the size as necessary
+                    imgtk = ctk.CTkImage(vars.ep_camera, size=(640, 360))  # Adjust the size as necessary
 
                     # Update the video label with the new frame
-                    self.video_label.configure(image=imgtk)
+                    self.video_label.configure(image=imgtk, text="")
                     self.video_label.imgtk = imgtk  # Keep a reference to avoid garbage collection
 
                 except:

@@ -257,11 +257,10 @@ class Setup:
                 """update the video frame"""
                 if not self.debug:
                     try:
-                        self.video_label.configure(text="", fg_color="")
                         imgtk = ctk.CTkImage(vars.ep_camera, size=(160, 90))  # Adjust the size as necessary
 
                         # Update the video label with the new frame
-                        self.video_label.configure(image=imgtk)
+                        self.video_label.configure(image=imgtk, text="")
                         self.video_label.imgtk = imgtk  # Keep a reference to avoid garbage collection
 
                     except:
