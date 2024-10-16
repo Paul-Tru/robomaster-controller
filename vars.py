@@ -3,6 +3,7 @@ from PIL import Image
 """file to store global variables"""
 
 # Controller
+controller:str = None
 # Joystick
 joy_l_x:int = 0
 joy_l_y:int = 0

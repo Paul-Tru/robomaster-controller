@@ -1,6 +1,5 @@
 import pygame
 import configparser
-import asyncio
 
 import vars
 
@@ -16,7 +15,7 @@ threshold = int(config["CONTROLLER"]["threshold"])
 pygame.init()
 pygame.joystick.init()
 
-async def read():
+def read():
     """read the values from the controller and store it into vars"""
     num_joysticks = pygame.joystick.get_count()
 
@@ -30,6 +29,7 @@ async def read():
         # Print the joystick's name
         name = joystick.get_name()
         print("Joystick name:", name)
+        vars.controller = name
 
         # Loop to read inputs
         while True:
@@ -104,8 +104,3 @@ async def read():
 def quit():
     """stop controller program"""
     pygame.quit()
-
-def run_async_read():
-    """make the async function runnable with sync function"""
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(read())

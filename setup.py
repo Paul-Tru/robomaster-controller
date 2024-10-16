@@ -1,13 +1,8 @@
-import time
-
 import configparser
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
-from PIL import Image
-import cv2
 
 import vars
-import gui
 
 class Setup:
     """gui to make settings for the robot and controller
@@ -172,8 +167,8 @@ class Setup:
         label.grid(row=0, padx=self.comp_pad, pady=self.comp_pad)
 
         def max_speed():
-            """create slider in frame to change the max speed"""
-            """in repeats per minute"""
+            """create slider in frame to change the max speed
+            in repeats per minute"""
             
             # create frame
             frame = ctk.CTkFrame(self.right_frame)
@@ -188,8 +183,8 @@ class Setup:
 
 
             def get(value):
-                """get value from slider"""
-                """shows it and writes it into config"""
+                """get value from slider
+                shows it and writes it into config"""
 
                 max_speed = int(value)  # Slider value is passed automatically
                 label.configure(text=f"Max Speed: {max_speed} rpm")  # Update label with formatted value
@@ -205,8 +200,8 @@ class Setup:
             self.max_speed_slider.set(int(max_speed))
 
         def max_distance():
-            """creates frame to change value"""
-            """when to stop in front of an obstacle"""
+            """creates frame to change value
+            when to stop in front of an obstacle"""
 
             # create frame
             frame = ctk.CTkFrame(self.right_frame)
@@ -243,6 +238,8 @@ class Setup:
             def update():
                 """update distance label"""
                 label.configure(text=f"Distance: {vars.distance} cm")
+                if vars.distance == 0:
+                    frame.configure(fg_color="darkred")
                 frame.after(20, update)
 
             if not self.debug:
@@ -260,6 +257,7 @@ class Setup:
                 """update the video frame"""
                 if not self.debug:
                     try:
+                        self.video_label.configure(text="", fg_color="")
                         imgtk = ctk.CTkImage(vars.ep_camera, size=(160, 90))  # Adjust the size as necessary
 
                         # Update the video label with the new frame
@@ -276,7 +274,7 @@ class Setup:
                     self.video_label.image = placeholder_imgtk
 
                 # Call this function again after a delay (e.g., 100ms)
-                self.video_label.after(100, update_frame)
+                self.video_label.after(200, update_frame)
 
             update_frame()
 
@@ -299,6 +297,9 @@ class Setup:
             # create frame
             self.controller_frame = ctk.CTkFrame(self.tabview.tab("Controller"))
             self.controller_frame.grid(padx=self.comp_pad, pady=self.comp_pad)
+
+            if vars.controller is None:
+                self.controller_frame.configure(fg_color="darkred")
 
             # create label
             label = ctk.CTkLabel(self.controller_frame, text="Controller", font=self.frame_font)
@@ -337,7 +338,7 @@ class Setup:
                                          f"{str(percent)}%")
 
                     # save to config
-                    self.config["CONTROLLER"]["threshold"] = str(threshold)
+                    self.config["CONTROLLER"]["threshold"] = str(round(threshold))
                     self.save_config()
 
                     # configure slider
@@ -455,8 +456,6 @@ class Setup:
 
         def start():
             """start main gui"""
-            gui.MainGui()
-            time.sleep("1")
             self.app.destroy()
 
         btn = ctk.CTkButton(self.app, text="Start", command=start)

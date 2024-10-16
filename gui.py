@@ -3,8 +3,6 @@ import vars
 import configparser
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
-from PIL import Image
-import cv2
 
 class MainGui:
     """Gui to see the robot camera and start dragrace"""
@@ -28,12 +26,14 @@ class MainGui:
         self.frame_font = eval(self.config["GUI"]["frame_font"])
         self.comp_pad = self.config["GUI"]["component_pad"]
 
+        self.video()
+
         self.app.mainloop()
 
     def video(self):
         """shows video preview or test picture"""
         frame = ctk.CTkFrame(self.app)
-        frame.grid(row=2, padx=self.comp_pad, pady=self.comp_pad)
+        frame.grid(row=4, padx=self.comp_pad, pady=self.comp_pad)
 
         self.video_label = ctk.CTkLabel(frame, text="")
         self.video_label.pack()
@@ -41,15 +41,8 @@ class MainGui:
         def update_frame():
             """update the video frame"""
             if not self.debug:
-                # get the current frame from the robot
-                img = vars.ep_camera.read_cv2_image(strategy="newest")
                 try:
-                    # Convert the frame to RGB (OpenCV uses BGR by default)
-                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                    img_pil = Image.fromarray(img)  # Convert to PIL image
-
-                    # Convert to CTkImage for display in CustomTkinter
-                    imgtk = ctk.CTkImage(img_pil, size=(320, 180))  # Adjust the size as necessary
+                    imgtk = ctk.CTkImage(vars.ep_camera, size=(160, 90))  # Adjust the size as necessary
 
                     # Update the video label with the new frame
                     self.video_label.configure(image=imgtk)
@@ -57,7 +50,7 @@ class MainGui:
 
                 except:
                     # Display an error message or a placeholder image
-                    self.video_label.configure(text="Error: unable to read video stream", fg="darkred")
+                    self.video_label.configure(text="Error: unable to read video stream", fg_color="darkred")
             else:
                 # show debug picture
                 placeholder_imgtk = ctk.CTkImage(vars.test_png, size=(160, 90))
