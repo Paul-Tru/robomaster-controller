@@ -9,6 +9,7 @@ import cv2
 import setup
 import gui
 import controller
+import robot_controll as rc
 import vars
 
 # Load configuration
@@ -29,8 +30,10 @@ if config["GENERAL"].getboolean("debug") is False:
         ep_camera = ep_robot.camera
         ep_camera.start_video_stream(display=False)
         ep_sensor = ep_robot.sensor
+        ep_chassis = ep_robot.chassis
 
         # Make variables global
+        vars.ep_chassis = ep_chassis
         vars.ep_sensor = ep_sensor
         vars.ep_robot = ep_robot
 
@@ -40,7 +43,7 @@ if config["GENERAL"].getboolean("debug") is False:
         ep_sensor.sub_distance(freq=10, callback=distance)
 
     except Exception as e:
-        CTkMessagebox(title="Error", message=str(e), icon="cancel")
+        CTkMessagebox(setup.app, title="Error", message=str(e), icon="cancel")
 
 def run_joystick_reader():
     """Makes async controller function runnable in sync function."""
@@ -74,5 +77,8 @@ def update_frame():
 # Start the camera frame update thread
 camera_thread = threading.Thread(target=update_frame)
 camera_thread.start()
+
+rc_thread = threading.Thread(target=rc.main)
+rc_thread.start()
 
 run_guis()

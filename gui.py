@@ -99,8 +99,9 @@ class MainGui:
 
             # Function to reset the button and label after stopping or completing
             def reset_button():
-                nonlocal stop_cntdw
+                nonlocal stop_cntdw, rp
                 stop_cntdw = False
+                rp = 0
                 button.configure(text="Go!", command=lambda: race(3))  # Reset command
                 label.configure(text="Drag Race", font=("Arial", 15))
 
@@ -121,11 +122,22 @@ class MainGui:
                 else:
                     label.configure(text="Go!", font=("Arial", 25, "bold"))  # Show go message
                     if rp == 0:
-                        race(5)  # Start next countdown from 5
+                        vars.motor_fl, vars.motor_fr = 1000, 950
+                        vars.motor_bl, vars.motor_br = 1000, 950
+                        race(0)  # Start next countdown from 5
                     elif rp == 1:
-                        race(3)  # Start next countdown from 3
+                        vars.motor_fl, vars.motor_fr = 0, 0
+                        vars.motor_bl, vars.motor_br = 0, 0
+                        race(2)  # Start next countdown from 3
                     elif rp == 2:
                         label.configure(text="Bringing back", font=("Arial", 15))  # Display bringing back
+                        try:
+                            vars.bring_back = False
+                        except Exception as e:
+                            CTkMessagebox(self.app,
+                                          title="Drive",
+                                          message=e,
+                                          icon="warning")
                     rp += 1  # Increment race progress
 
             button = ctk.CTkButton(frame, text="Go!", command=lambda: race(3))  # Button setup

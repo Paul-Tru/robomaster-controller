@@ -50,12 +50,14 @@ def read():
                         if axis == 1:
                             # left joystick y value
                             vars.joy_l_y = value
+                            vars.motor_fl, vars.motor_bl = value, value
                         elif axis == 0:
                             # left joystick x value
                             vars.joy_l_x = value
                         elif axis == 3:
                             # right joystick x value
                             vars.joy_r_y = value
+                            vars.motor_fr, vars.motor_br = value, value
                         elif axis == 2:
                             # left joystick y value
                             vars.joy_r_x = value
@@ -68,16 +70,20 @@ def read():
                             value = round(-value * trigger)
                             value = round((-value + trigger) / 2)
                             vars.tr_r = value
-                        else:
-                            # reset values
-                            vars.joy_l_x = 0
-                            vars.joy_l_y = 0
+                    else:
+                        # reset values
+                        vars.motor_bl = 0
+                        vars.motor_br = 0
+                        vars.motor_fl = 0
+                        vars.motor_fr = 0
+                        vars.joy_l_x = 0
+                        vars.joy_l_y = 0
 
-                            vars.joy_r_x = 0
-                            vars.joy_r_y = 0
+                        vars.joy_r_x = 0
+                        vars.joy_r_y = 0
 
-                            vars.tr_l = 0
-                            vars.tr_r = 0
+                        vars.tr_l = 0
+                        vars.tr_r = 0
 
                 button_states = {}
 
