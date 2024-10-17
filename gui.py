@@ -142,14 +142,14 @@ class MainGui:
                    sticky="n")
 
         self.video_label = ctk.CTkLabel(frame, text="",
-                                        width=640, height=360)
+                                        width=960, height=540)
         self.video_label.pack()
 
         def update_frame():
             """update the video frame"""
             if not self.debug:
                 try:
-                    imgtk = ctk.CTkImage(vars.ep_camera, size=(640, 360))  # Adjust the size as necessary
+                    imgtk = ctk.CTkImage(vars.ep_camera, size=(960, 540))  # Adjust the size as necessary
 
                     # Update the video label with the new frame
                     self.video_label.configure(image=imgtk, text="")
@@ -160,7 +160,7 @@ class MainGui:
                     self.video_label.configure(text="Error: unable to read video stream", fg_color="darkred")
             else:
                 # show debug picture
-                placeholder_imgtk = ctk.CTkImage(vars.test_png, size=(640, 360))
+                placeholder_imgtk = ctk.CTkImage(vars.test_png, size=(960, 540))
                 self.video_label.configure(image=placeholder_imgtk)
                 self.video_label.image = placeholder_imgtk
 
