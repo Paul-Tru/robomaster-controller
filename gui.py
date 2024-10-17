@@ -1,23 +1,23 @@
-import vars
-
 import configparser
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 
+import vars
+
 class MainGui:
-    """Gui to see the robot camera and start dragrace"""
+    """Gui to see the robot camera and start drag race"""
     def __init__(self):
         # read config.ini
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
-        
+
         # get debug from config.ini
         self.debug = self.config.getboolean("GENERAL", "debug")
 
         # set values for ctk window
         self.app = ctk.CTk()
         ctk.set_appearance_mode(self.config["GUI"]["appearance"])
-        self.app.geometry(self.config["GUI"]["geometry"])
+        self.app.geometry(self.config["GUI"]["geometry_main"])
         if not self.debug:
             self.app.title("Titan")
         else:
@@ -27,22 +27,122 @@ class MainGui:
         self.comp_pad = self.config["GUI"]["component_pad"]
 
         # call functions
-        self.show_motor_value()
         self.video()
+        self.left_frame()
+        self.right_frame()
 
         self.app.mainloop()
 
-    def show_motor_value(self):
-        """shows value of each motor"""
-        self.motor_frame = ctk.CTkFrame(self.app)
-        self.motor_frame.grid(row=0, rowspan=2, padx=self.comp_pad, pady=self.comp_pad)
+    def left_frame(self):
+        left_frame = ctk.CTkFrame(self.app)
+        left_frame.grid(row=0, column=0,
+                        padx=self.frame_pad, pady=self.frame_pad)
+
+        def show_motor_value():
+            """Shows value of each motor"""
+            motor_frame = ctk.CTkFrame(left_frame)
+            motor_frame.grid(row=0, column=0, padx=self.comp_pad, pady=self.comp_pad, sticky="nsew")
+
+            # Configure grid to make motor_frame expand
+            left_frame.grid_rowconfigure(0, weight=1)
+            left_frame.grid_columnconfigure(0, weight=1)
+
+            label = ctk.CTkLabel(motor_frame, text="Motors", font=self.frame_font)
+            label.grid(columnspan=2, padx=self.comp_pad, pady=self.comp_pad)
+
+            def make_progressbar():
+                """Make progressbars to show values from each wheel"""
+                row, column = 1, 0
+                progressbars = []
+
+                # Configure grid inside motor_frame to expand and fill space
+                motor_frame.grid_rowconfigure(1, weight=1)
+                motor_frame.grid_rowconfigure(2, weight=1)
+                motor_frame.grid_columnconfigure(0, weight=1)
+                motor_frame.grid_columnconfigure(1, weight=1)
+
+                # Creating one progressbar for every wheel
+                for i in range(4):
+                    progressbar = ctk.CTkProgressBar(motor_frame, orientation="vertical")
+                    progressbar.grid(row=row, column=column, padx=25, pady=self.comp_pad, sticky="nsew")
+                    progressbars.append(progressbar)
+
+                    column += 1
+                    if column == 2:
+                        row = 2
+                        column = 0
+
+                return progressbars
+
+            progressbars = make_progressbar()
+
+            def update():
+                """updating values according to variables in vars.py"""
+                progressbars[0].set((vars.motor_fl + 100) / 200)
+                progressbars[1].set((vars.motor_fr + 100) / 200)
+                progressbars[2].set((vars.motor_bl + 100) / 200)
+                progressbars[3].set((vars.motor_br + 100) / 200)
+
+                motor_frame.after(100, update)
+
+            update()
+
+        def start_drag_race():
+            frame = ctk.CTkFrame(left_frame)
+            frame.grid(row=2, column=0, padx=self.comp_pad, pady=self.comp_pad)
+
+            label = ctk.CTkLabel(frame, text="Drag Race")
+            label.grid(row=0, column=0)
+
+            stop_cntdw = False  # Flag to control countdown
+            rp = 0  # Race progress counter
+
+            # Function to reset the button and label after stopping or completing
+            def reset_button():
+                nonlocal stop_cntdw
+                stop_cntdw = False
+                button.configure(text="Go!", command=lambda: race(3))  # Reset command
+                label.configure(text="Drag Race", font=("Arial", 15))
+
+            def stop():
+                nonlocal stop_cntdw
+                stop_cntdw = True  # Set flag to stop the countdown
+                label.configure(text="Stopped", font=("Arial", 25))  # Show stopped message
+                frame.after(1000, reset_button)  # Wait a second before resetting
+
+            def race(count):
+                nonlocal stop_cntdw, rp
+                if count >= 0 and not stop_cntdw:
+                    button.configure(text="ABORT", command=stop)  # Change button to abort
+                    label.configure(text=str(count), font=("Arial", 25, "bold"))
+                    frame.after(1000, race, count - 1)  # Continue countdown
+                elif stop_cntdw:
+                    reset_button()  # Reset button and label after abort
+                else:
+                    label.configure(text="Go!", font=("Arial", 25, "bold"))  # Show go message
+                    if rp == 0:
+                        race(5)  # Start next countdown from 5
+                    elif rp == 1:
+                        race(3)  # Start next countdown from 3
+                    elif rp == 2:
+                        label.configure(text="Bringing back", font=("Arial", 15))  # Display bringing back
+                    rp += 1  # Increment race progress
+
+            button = ctk.CTkButton(frame, text="Go!", command=lambda: race(3))  # Button setup
+            button.grid(row=1, column=0)  # Adding button to the frame
+
+        show_motor_value()
+        start_drag_race()
 
     def video(self):
         """shows video preview or test picture"""
         frame = ctk.CTkFrame(self.app)
-        frame.grid(row=2, padx=self.comp_pad, pady=self.comp_pad)
+        frame.grid(row=0, column=2,
+                   padx=self.frame_pad, pady=self.frame_pad,
+                   sticky="n")
 
-        self.video_label = ctk.CTkLabel(frame, text="")
+        self.video_label = ctk.CTkLabel(frame, text="",
+                                        width=640, height=360)
         self.video_label.pack()
 
         def update_frame():
@@ -60,7 +160,7 @@ class MainGui:
                     self.video_label.configure(text="Error: unable to read video stream", fg_color="darkred")
             else:
                 # show debug picture
-                placeholder_imgtk = ctk.CTkImage(vars.test_png, size=(160, 90))
+                placeholder_imgtk = ctk.CTkImage(vars.test_png, size=(640, 360))
                 self.video_label.configure(image=placeholder_imgtk)
                 self.video_label.image = placeholder_imgtk
 
@@ -68,3 +168,41 @@ class MainGui:
             self.video_label.after(100, update_frame)
 
         update_frame()
+
+    def right_frame(self):
+        right_frame = ctk.CTkFrame(self.app)
+        right_frame.grid(row=0, column=3,
+                         padx=self.frame_pad, pady=self.frame_pad,
+                         sticky="n")
+
+        current_distance_label = None
+
+        def distance_label():
+            """shows current distance from distance sensor"""
+            frame = ctk.CTkFrame(right_frame)
+            frame.grid(row=0, column=0,
+                       padx=self.comp_pad, pady=self.comp_pad)
+
+            label = ctk.CTkLabel(frame, text="Distance")
+            label.pack(padx=self.comp_pad, pady=(self.comp_pad, 0))
+
+            current_distance_label = ctk.CTkLabel(frame,
+                                                  text="N/A", font=self.frame_font)
+            current_distance_label.pack(padx=self.comp_pad, pady=self.comp_pad)
+
+        def battery_label():
+            """shows current battery level from the robot"""
+            frame = ctk.CTkFrame(right_frame)
+            frame.grid(row=0, column=1,
+                       padx=(0, self.comp_pad), pady=self.comp_pad)
+
+            label = ctk.CTkLabel(frame,
+                                 text="Battery")
+            label.pack(padx=self.comp_pad, pady=(10,0))
+
+            current_battery_label = ctk.CTkLabel(frame,
+                                                 text="N/A", font=self.frame_font)
+            current_battery_label.pack(padx=self.comp_pad, pady=self.comp_pad)
+
+        battery_label()
+        distance_label()
