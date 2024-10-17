@@ -57,10 +57,6 @@ def run_guis():
     setup.Setup()  # Start the setup GUI
     gui.MainGui()  # Start the main GUI
 
-# Start the GUI thread
-#gui_thread = threading.Thread(target=run_guis)
-#gui_thread.start()
-
 def update_frame():
     while True:
         """Update the video frame."""

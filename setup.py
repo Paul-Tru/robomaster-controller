@@ -19,7 +19,7 @@ class Setup:
         # set values for ctk window
         self.app = ctk.CTk()
         ctk.set_appearance_mode(self.config["GUI"]["appearance"])
-        self.app.geometry(self.config["GUI"]["geometry"])
+        self.app.geometry(self.config["GUI"]["geometry_setup"])
         if not self.debug:
             self.app.title("Titan Setup")
         else:
@@ -454,7 +454,9 @@ class Setup:
         """create button to start the main gui"""
 
         def start():
-            """start main gui"""
+            """destroy setup gui and open main gui"""
+            self.right_frame.destroy()
+            self.tabview.destroy()
             self.app.destroy()
 
         btn = ctk.CTkButton(self.app, text="Start", command=start)

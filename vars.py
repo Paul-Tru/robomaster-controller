@@ -35,3 +35,9 @@ ep_robot = None
 ep_sensor = None
 ep_camera = None
 test_png = Image.open("test.png")
+
+# motors
+motor_fl:int = 0
+motor_fr:int = 0
+motor_bl:int = 0
+motor_br:int = 0
