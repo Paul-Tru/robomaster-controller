@@ -138,7 +138,7 @@ class MainGui:
         """shows video preview or test picture"""
         frame = ctk.CTkFrame(self.app)
         frame.grid(row=0, column=2,
-                   padx=self.frame_pad, pady=self.frame_pad,
+                   padx=self.comp_pad, pady=self.comp_pad,
                    sticky="n")
 
         self.video_label = ctk.CTkLabel(frame, text="",
@@ -175,18 +175,27 @@ class MainGui:
                          padx=self.frame_pad, pady=self.frame_pad,
                          sticky="n")
 
-        current_distance_label = None
+        def update_values():
+            distance = vars.distance
+            if distance <= int(self.config["ROBOT"]["max_distance"]):
+                current_distance_frame.configure(fg_color="darkred")
+            else:
+                current_distance_frame.configure(fg_color="#2E2E2E")
+            current_distance_label.configure(text=f"{vars.distance}cm")
+
+            right_frame.after(100, update_values)
 
         def distance_label():
+            global current_distance_label, current_distance_frame
             """shows current distance from distance sensor"""
-            frame = ctk.CTkFrame(right_frame)
-            frame.grid(row=0, column=0,
+            current_distance_frame = ctk.CTkFrame(right_frame)
+            current_distance_frame.grid(row=0, column=0,
                        padx=self.comp_pad, pady=self.comp_pad)
 
-            label = ctk.CTkLabel(frame, text="Distance")
-            label.pack(padx=self.comp_pad, pady=(self.comp_pad, 0))
+            label = ctk.CTkLabel(current_distance_frame, text="Distance")
+            label.pack(padx=self.comp_pad, pady=(10, 0))
 
-            current_distance_label = ctk.CTkLabel(frame,
+            current_distance_label = ctk.CTkLabel(current_distance_frame,
                                                   text="N/A", font=self.frame_font)
             current_distance_label.pack(padx=self.comp_pad, pady=self.comp_pad)
 
@@ -194,7 +203,7 @@ class MainGui:
             """shows current battery level from the robot"""
             frame = ctk.CTkFrame(right_frame)
             frame.grid(row=0, column=1,
-                       padx=(0, self.comp_pad), pady=self.comp_pad)
+                       padx=(0, 10), pady=self.comp_pad)
 
             label = ctk.CTkLabel(frame,
                                  text="Battery")
@@ -206,3 +215,4 @@ class MainGui:
 
         battery_label()
         distance_label()
+        update_values()
