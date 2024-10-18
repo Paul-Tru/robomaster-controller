@@ -23,7 +23,7 @@ pc_ip = config["IP"]["pc"]
 # Initialize robot if not in debug mode
 if config["GENERAL"].getboolean("debug") is False:
     try:
-        from robomaster import robot, vision
+        from robomaster import robot, vision, led
         robot.config.ROBOT_IP_STR = rob_ip
         robot.config.LOCAL_IP_STR = pc_ip
         ep_robot = robot.Robot()
@@ -34,11 +34,14 @@ if config["GENERAL"].getboolean("debug") is False:
         result = ep_vision.sub_detect_info(name="person", callback=detect.on_detect_person)
         ep_sensor = ep_robot.sensor
         ep_chassis = ep_robot.chassis
+        ep_led = ep_robot.led
 
         # Make variables global
         vars.ep_chassis = ep_chassis
         vars.ep_sensor = ep_sensor
         vars.ep_robot = ep_robot
+        vars.ep_led = ep_led
+        vars.led = led
 
         # Callback to update distance
         def distance(value):

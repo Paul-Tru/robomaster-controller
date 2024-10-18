@@ -35,6 +35,7 @@ ep_robot = None
 ep_sensor = None
 ep_camera = None
 ep_chassis = None
+ep_led = None
 test_png = Image.open("test.png")
 
 # detect persons

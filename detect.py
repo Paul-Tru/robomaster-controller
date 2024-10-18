@@ -30,4 +30,3 @@ def on_detect_person(person_info):
     for i in range(0, number):
         x, y, w, h = person_info[i]
         vars.persons.append(PersonInfo(x, y, w, h))
-        print(f"Person {i}: x={x}, y={y}, w={w}, h={h}")  # Debug: Log person info
