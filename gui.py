@@ -78,10 +78,11 @@ class MainGui:
 
             def update():
                 """updating values according to variables in vars.py"""
-                progressbars[0].set((vars.motor_fl + 100) / 200)
-                progressbars[1].set((vars.motor_fr + 100) / 200)
-                progressbars[2].set((vars.motor_bl + 100) / 200)
-                progressbars[3].set((vars.motor_br + 100) / 200)
+                max_speed = int(self.config["ROBOT"]["max_speed"])
+                progressbars[0].set((vars.motor_fl + max_speed) / (max_speed*2))
+                progressbars[1].set((vars.motor_fr + max_speed) / (max_speed*2))
+                progressbars[2].set((vars.motor_bl + max_speed) / (max_speed*2))
+                progressbars[3].set((vars.motor_br + max_speed) / (max_speed*2))
 
                 motor_frame.after(100, update)
 
@@ -102,7 +103,7 @@ class MainGui:
                 nonlocal stop_cntdw, rp
                 stop_cntdw = False
                 rp = 0
-                button.configure(text="Go!", command=lambda: race(3))  # Reset command
+                button.configure(text="Go!", command=lambda: race(10))  # Reset command
                 label.configure(text="Drag Race", font=("Arial", 15))
 
             def stop():
@@ -140,7 +141,7 @@ class MainGui:
                                           icon="warning")
                     rp += 1  # Increment race progress
 
-            button = ctk.CTkButton(frame, text="Go!", command=lambda: race(3))  # Button setup
+            button = ctk.CTkButton(frame, text="Go!", command=lambda: race(10))  # Button setup
             button.grid(row=1, column=0)  # Adding button to the frame
 
         show_motor_value()

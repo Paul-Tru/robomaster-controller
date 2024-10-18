@@ -11,6 +11,7 @@ import gui
 import controller
 import robot_controll as rc
 import vars
+import detect
 
 # Load configuration
 config = configparser.ConfigParser()
@@ -22,13 +23,15 @@ pc_ip = config["IP"]["pc"]
 # Initialize robot if not in debug mode
 if config["GENERAL"].getboolean("debug") is False:
     try:
-        from robomaster import robot
+        from robomaster import robot, vision
         robot.config.ROBOT_IP_STR = rob_ip
         robot.config.LOCAL_IP_STR = pc_ip
         ep_robot = robot.Robot()
         ep_robot.initialize(conn_type="sta")
+        ep_vision = ep_robot.vision
         ep_camera = ep_robot.camera
         ep_camera.start_video_stream(display=False)
+        result = ep_vision.sub_detect_info(name="person", callback=detect.on_detect_person)
         ep_sensor = ep_robot.sensor
         ep_chassis = ep_robot.chassis
 
@@ -43,7 +46,7 @@ if config["GENERAL"].getboolean("debug") is False:
         ep_sensor.sub_distance(freq=10, callback=distance)
 
     except Exception as e:
-        CTkMessagebox(setup.app, title="Error", message=str(e), icon="cancel")
+        CTkMessagebox(title="Error", message=str(e), icon="cancel")
 
 def run_joystick_reader():
     """Makes async controller function runnable in sync function."""
@@ -62,16 +65,27 @@ def run_guis():
 
 def update_frame():
     while True:
+        persons = vars.persons
         """Update the video frame."""
-        if config["GENERAL"].getboolean("debug") is False:
+        if not config["GENERAL"].getboolean("debug"):
             # Get the current frame from the robot
-            img = ep_camera.read_cv2_image(strategy="newest")
+            img_camera = ep_camera.read_cv2_image(strategy="newest")
+            img = img_camera.copy()  # Make a copy of the camera image for processing
+            
+            print(f"Number of persons detected: {len(persons)}")  # Debug: Check how many persons are detected
+            
+            # Draw rectangles around detected persons
+            for person in persons:
+                cv2.rectangle(img, person.pt1, person.pt2, (255, 255, 255), 2)
+                print(f"Drawing rectangle at {person.pt1} to {person.pt2}")  # Debug: Log rectangle coordinates
+
             # Convert the frame to RGB
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             img_pil = Image.fromarray(img)  # Convert to PIL image
             
+            # Store the image with rectangles in vars.camera
             vars.ep_camera = img_pil
-
+            
             time.sleep(0.02)
 
 # Start the camera frame update thread
@@ -82,3 +96,9 @@ rc_thread = threading.Thread(target=rc.main)
 rc_thread.start()
 
 run_guis()
+
+
+result = ep_vision.unsub_detect_info(name="person")
+cv2.destroyAllWindows()
+ep_camera.stop_video_stream()
+ep_robot.close()

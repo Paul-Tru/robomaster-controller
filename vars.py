@@ -37,6 +37,9 @@ ep_camera = None
 ep_chassis = None
 test_png = Image.open("test.png")
 
+# detect persons
+persons = []
+
 # motors
 motor_fl:int = 0
 motor_fr:int = 0
