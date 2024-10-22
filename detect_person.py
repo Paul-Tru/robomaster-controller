@@ -1,5 +1,3 @@
-import cv2
-
 import vars
 
 class PersonInfo:
@@ -26,7 +24,6 @@ class PersonInfo:
 def on_detect_person(person_info):
     number = len(person_info)
     vars.persons.clear()
-    print(f"Detected {number} person(s).")  # Debug: Show how many persons are detected
     for i in range(0, number):
         x, y, w, h = person_info[i]
         vars.persons.append(PersonInfo(x, y, w, h))

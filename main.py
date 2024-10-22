@@ -11,7 +11,7 @@ import gui
 import controller
 import robot_controll as rc
 import vars
-import detect
+import detect_person
 
 # Load configuration
 config = configparser.ConfigParser()
@@ -31,7 +31,7 @@ if config["GENERAL"].getboolean("debug") is False:
         ep_vision = ep_robot.vision
         ep_camera = ep_robot.camera
         ep_camera.start_video_stream(display=False)
-        result = ep_vision.sub_detect_info(name="person", callback=detect.on_detect_person)
+        result = ep_vision.sub_detect_info(name="person", callback=detect_person.on_detect_person)
         ep_sensor = ep_robot.sensor
         ep_chassis = ep_robot.chassis
         ep_led = ep_robot.led
@@ -63,7 +63,7 @@ joystick_thread.start()
 
 def run_guis():
     """Makes async GUI functions runnable in sync function."""
-    setup.Setup()  # Start the setup GUI
+    #setup.Setup()  # Start the setup GUI
     gui.MainGui()  # Start the main GUI
 
 def update_frame():
@@ -74,13 +74,10 @@ def update_frame():
             # Get the current frame from the robot
             img_camera = ep_camera.read_cv2_image(strategy="newest")
             img = img_camera.copy()  # Make a copy of the camera image for processing
-            
-            print(f"Number of persons detected: {len(persons)}")  # Debug: Check how many persons are detected
-            
+                        
             # Draw rectangles around detected persons
             for person in persons:
                 cv2.rectangle(img, person.pt1, person.pt2, (255, 255, 255), 2)
-                print(f"Drawing rectangle at {person.pt1} to {person.pt2}")  # Debug: Log rectangle coordinates
 
             # Convert the frame to RGB
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)

@@ -79,12 +79,14 @@ class MainGui:
             def update():
                 """updating values according to variables in vars.py"""
                 max_speed = int(self.config["ROBOT"]["max_speed"])
+                print(f"Motor Values: FL={vars.motor_fl}, FR={vars.motor_fr}, BL={vars.motor_bl}, BR={vars.motor_br}")
+
                 progressbars[0].set((vars.motor_fl + max_speed) / (max_speed*2))
                 progressbars[1].set((vars.motor_fr + max_speed) / (max_speed*2))
                 progressbars[2].set((vars.motor_bl + max_speed) / (max_speed*2))
                 progressbars[3].set((vars.motor_br + max_speed) / (max_speed*2))
 
-                motor_frame.after(100, update)
+                motor_frame.after(5, update)
 
             update()
 
@@ -103,7 +105,7 @@ class MainGui:
                 nonlocal stop_cntdw, rp
                 stop_cntdw = False
                 rp = 0
-                button.configure(text="Go!", command=lambda: race(10))  # Reset command
+                button.configure(text="Go!", command=lambda: race(5))  # Reset command
                 label.configure(text="Drag Race", font=("Arial", 15))
 
             def stop():
@@ -115,33 +117,43 @@ class MainGui:
             def race(count):
                 nonlocal stop_cntdw, rp
                 if count >= 0 and not stop_cntdw:
+                    if count % 2 == 0:
+                        vars.ep_led.set_led(comp=vars.led.COMP_ALL,
+                                            r=0, g=0, b=5, 
+                                            effect=vars.led.EFFECT_ON)
+                    else:
+                        vars.ep_led.set_led(comp=vars.led.COMP_ALL,
+                                            r=0, g=5, b=5, 
+                                            effect=vars.led.EFFECT_ON)
                     button.configure(text="ABORT", command=stop)  # Change button to abort
                     label.configure(text=str(count), font=("Arial", 25, "bold"))
                     frame.after(1000, race, count - 1)  # Continue countdown
                 elif stop_cntdw:
                     reset_button()  # Reset button and label after abort
                 else:
+                    vars.overwrite = True
                     label.configure(text="Go!", font=("Arial", 25, "bold"))  # Show go message
                     if rp == 0:
-                        vars.motor_fl, vars.motor_fr = 1000, 950
-                        vars.motor_bl, vars.motor_br = 1000, 950
+                        vars.ep_chassis.move(x=5, xy_speed=3.5).wait_for_completed()
+                        vars.ep_chassis.move(x=5, xy_speed=3.5).wait_for_completed()
                         race(0)  # Start next countdown from 5
                     elif rp == 1:
-                        vars.motor_fl, vars.motor_fr = 0, 0
-                        vars.motor_bl, vars.motor_br = 0, 0
                         race(2)  # Start next countdown from 3
                     elif rp == 2:
                         label.configure(text="Bringing back", font=("Arial", 15))  # Display bringing back
+                        vars.ep_chassis.move(x=-5, xy_speed=1.5).wait_for_completed()
+                        vars.ep_chassis.move(x=-5, xy_speed=1.5).wait_for_completed()
+                        vars.overwrite = False
                         try:
                             vars.bring_back = False
                         except Exception as e:
                             CTkMessagebox(self.app,
-                                          title="Drive",
-                                          message=e,
-                                          icon="warning")
+                                        title="Drive",
+                                        message=e,
+                                        icon="warning")
                     rp += 1  # Increment race progress
 
-            button = ctk.CTkButton(frame, text="Go!", command=lambda: race(10))  # Button setup
+            button = ctk.CTkButton(frame, text="Go!", command=lambda: race(5))  # Button setup
             button.grid(row=1, column=0)  # Adding button to the frame
 
         show_motor_value()
@@ -194,6 +206,8 @@ class MainGui:
                 current_distance_frame.configure(fg_color="darkred")
             else:
                 current_distance_frame.configure(fg_color="#2E2E2E")
+                vars.motor_fl, vars.motor_fr = 0, 0
+                vars.motor_bl, vars.motor_br = 0, 0
             current_distance_label.configure(text=f"{vars.distance}cm")
 
             right_frame.after(100, update_values)

@@ -11,7 +11,7 @@ def check_conn() -> bool:
         return False
     
 def main():
-    while True:
+    while not vars.overwrite:
         # and vars.distance > 100
         if not vars.bring_back:
             vars.ep_chassis.drive_wheels(w1=vars.motor_fr, 

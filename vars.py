@@ -30,6 +30,7 @@ btn_10 = False
 btn_11 = False
 
 # Robot
+overwrite = False
 distance:int = 0
 ep_robot = None
 ep_sensor = None
