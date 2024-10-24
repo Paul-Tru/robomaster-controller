@@ -226,17 +226,29 @@ class MainGui:
 
         def battery_label():
             """shows current battery level from the robot"""
-            frame = ctk.CTkFrame(right_frame)
-            frame.grid(row=0, column=1,
+            current_battery_frame = ctk.CTkFrame(right_frame)
+            current_battery_frame.grid(row=0, column=1,
                        padx=(0, 10), pady=self.comp_pad)
 
-            label = ctk.CTkLabel(frame,
+            label = ctk.CTkLabel(current_battery_frame,
                                  text="Battery")
             label.pack(padx=self.comp_pad, pady=(10,0))
 
-            current_battery_label = ctk.CTkLabel(frame,
+            current_battery_label = ctk.CTkLabel(current_battery_frame,
                                                  text="N/A", font=self.frame_font)
             current_battery_label.pack(padx=self.comp_pad, pady=self.comp_pad)
+
+            def update_values():
+                battery = vars.battery
+                if battery <= 30:
+                    current_battery_frame.configure(fg_color="darkred")
+                else:
+                    current_battery_frame.configure(fg_color="#2E2E2E")
+                current_battery_label.configure(text=f"{vars.battery}%")
+
+                right_frame.after(100, update_values)
+            
+            update_values()
 
         battery_label()
         distance_label()

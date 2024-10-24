@@ -1,4 +1,5 @@
 import time
+
 import configparser
 from CTkMessagebox import CTkMessagebox
 import threading
@@ -35,18 +36,25 @@ if config["GENERAL"].getboolean("debug") is False:
         ep_sensor = ep_robot.sensor
         ep_chassis = ep_robot.chassis
         ep_led = ep_robot.led
+        ep_battery = ep_robot.battery
 
         # Make variables global
         vars.ep_chassis = ep_chassis
         vars.ep_sensor = ep_sensor
         vars.ep_robot = ep_robot
         vars.ep_led = ep_led
+        vars.ep_battery = ep_battery
         vars.led = led
 
         # Callback to update distance
         def distance(value):
             vars.distance = value[0]/10
         ep_sensor.sub_distance(freq=10, callback=distance)
+
+        def battery(value):
+            vars.battery = value
+
+        ep_battery.sub_battery_info(freq=5, callback=battery)
 
     except Exception as e:
         CTkMessagebox(title="Error", message=str(e), icon="cancel")
