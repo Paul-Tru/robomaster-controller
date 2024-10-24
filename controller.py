@@ -42,7 +42,6 @@ def read():
                     # calculate joystick value
                     value = round(event.value * max_speed)
                     value = -value  # Invert the axis if needed
-                    trigger = int(config["CONTROLLER"]["trigger"])
                     # continue only when value is over threshold
                     if value >= threshold or value <= -threshold:
                         axis = event.axis
@@ -50,25 +49,23 @@ def read():
                         if axis == 1:
                             # left joystick y value
                             vars.joy_l_y = value
-                            vars.motor_fl, vars.motor_bl = value, value
                         elif axis == 0:
                             # left joystick x value
                             vars.joy_l_x = value
                         elif axis == 3:
                             # right joystick x value
                             vars.joy_r_y = value
-                            vars.motor_fr, vars.motor_br = value, value
                         elif axis == 2:
                             # left joystick y value
                             vars.joy_r_x = value
                         # calculate trigger value
                         elif axis == 4:  # trigger left
-                            value = round(-value * trigger)
-                            value = round((-value + trigger) / 2)
+                            value = round((round(-value) + max_speed) / 2)
+                            print(value)
                             vars.tr_l = value
                         elif axis == 5:  # trigger right
-                            value = round(-value * trigger)
-                            value = round((-value + trigger) / 2)
+                            value = round((round(-value) + max_speed) / 2)
+                            print(value)
                             vars.tr_r = value
                     else:
                         # reset values
@@ -76,6 +73,7 @@ def read():
                         vars.motor_br = 0
                         vars.motor_fl = 0
                         vars.motor_fr = 0
+
                         vars.joy_l_x = 0
                         vars.joy_l_y = 0
 
@@ -99,7 +97,15 @@ def read():
                     print(f"Button {event.button} released")
 
                 elif event.type == pygame.JOYHATMOTION:
-                    print(f"Hat {event.hat} value: {event.value}")
+                    #(-1, 1) (0, 1) (1, 1)
+                    #(-1, 0) (0, 0) (1, 0)
+                    #(-1, 0) (0, -1) (1, -1)
+                    hat = event.value
+                    value = vars.tr_r
+                    print(f"Hat value: {hat}")
+                    if hat == (-1, 0):
+                        vars.motor_fl, vars.motor_fr = -value, value
+                        vars.motor_bl, vars.motor_br = value, -value
 
                 print(button_states)
 
