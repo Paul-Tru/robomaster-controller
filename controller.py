@@ -16,7 +16,7 @@ pygame.init()
 pygame.joystick.init()
 
 def read():
-    """read the values from the controller and store it into vars"""
+    """Read the values from the controller and store it into vars."""
     num_joysticks = pygame.joystick.get_count()
 
     # Check if a controller is connected
@@ -31,87 +31,59 @@ def read():
         print("Joystick name:", name)
         vars.controller = name
 
+        # Initialize hat and joystick values
+        hat_position = (0, 0)
+        right_trigger_value = 0  # Only track the right trigger
+
         # Loop to read inputs
         while True:
             clock.tick(int(config["CONTROLLER"]["repeats_second"]))  # Set the loop to run at the configured rate
 
             # Process events
             for event in pygame.event.get():
-                # process joystick
+                # Handle hat motion first
+                if event.type == pygame.JOYHATMOTION:
+                    hat_position = event.value
+                    #print(f"Hat value: {hat_position}")
+
+                # Process joystick movement for right trigger
                 if event.type == pygame.JOYAXISMOTION:
-                    # calculate joystick value
                     value = round(event.value * max_speed)
                     value = -value  # Invert the axis if needed
-                    # continue only when value is over threshold
+
+                    # Continue only when value is over threshold
                     if value >= threshold or value <= -threshold:
                         axis = event.axis
-                        print(f"Axis {event.axis} value: {value}")
-                        if axis == 1:
-                            # left joystick y value
-                            vars.joy_l_y = value
-                        elif axis == 0:
-                            # left joystick x value
-                            vars.joy_l_x = value
-                        elif axis == 3:
-                            # right joystick x value
-                            vars.joy_r_y = value
-                        elif axis == 2:
-                            # left joystick y value
-                            vars.joy_r_x = value
-                        # calculate trigger value
-                        elif axis == 4:  # trigger left
-                            value = round((round(-value) + max_speed) / 2)
-                            print(value)
-                            vars.tr_l = value
-                        elif axis == 5:  # trigger right
-                            value = round((round(-value) + max_speed) / 2)
-                            print(value)
-                            vars.tr_r = value
-                    else:
-                        # reset values
-                        vars.motor_bl = 0
-                        vars.motor_br = 0
-                        vars.motor_fl = 0
-                        vars.motor_fr = 0
+                        if axis == 5:  # right trigger
+                            right_trigger_value = round((round(-value) + max_speed) / 2)
+                            vars.tr_r = right_trigger_value
+                            #print(f"Right Trigger value: {right_trigger_value}")
 
-                        vars.joy_l_x = 0
-                        vars.joy_l_y = 0
+                # Reset values if the trigger is not pressed enough
+                if event.type == pygame.JOYAXISMOTION and abs(value) < threshold:
+                    right_trigger_value = 0
+                    vars.tr_r = 0
 
-                        vars.joy_r_x = 0
-                        vars.joy_r_y = 0
-
-                        vars.tr_l = 0
-                        vars.tr_r = 0
-
+                # Process button events
                 button_states = {}
 
                 if event.type == pygame.JOYBUTTONDOWN:
-                    # change variable in vars.py to True
-                    button_name = f"vars.btn_{event.button}"
+                    button_name = f"btn_{event.button}"
                     button_states[button_name] = True
+                    setattr(vars, button_name, True)  # Update button state
                     print(f"Button {event.button} pressed")
 
                 if event.type == pygame.JOYBUTTONUP:
-                    # change variable in vars.py to False
                     setattr(vars, f'btn_{event.button}', False)
                     print(f"Button {event.button} released")
 
-                elif event.type == pygame.JOYHATMOTION:
-                    #(-1, 1) (0, 1) (1, 1)
-                    #(-1, 0) (0, 0) (1, 0)
-                    #(-1, 0) (0, -1) (1, -1)
-                    hat = event.value
-                    value = vars.tr_r
-                    print(f"Hat value: {hat}")
-                    if hat == (-1, 0):
-                        vars.motor_fl, vars.motor_fr = -value, value
-                        vars.motor_bl, vars.motor_br = value, -value
-
-                print(button_states)
+            # Output the current hat and right trigger value
+            vars.trigger_hat = hat_position, right_trigger_value
 
     else:
-        # handle non-successful connection
+        # Handle non-successful connection
         print("No joysticks connected")
+
 
 def quit():
     """stop controller program"""

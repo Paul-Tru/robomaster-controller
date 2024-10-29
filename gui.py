@@ -79,10 +79,18 @@ class MainGui:
             def update():
                 """updating values according to variables in vars.py"""
                 max_speed = int(self.config["ROBOT"]["max_speed"])
-                progressbars[0].set((vars.motor_fl + max_speed) / (max_speed*2))
-                progressbars[1].set((vars.motor_fr + max_speed) / (max_speed*2))
-                progressbars[2].set((vars.motor_bl + max_speed) / (max_speed*2))
-                progressbars[3].set((vars.motor_br + max_speed) / (max_speed*2))
+            
+                progressbars[0].set((vars.motor[3] + max_speed) 
+                                    / (max_speed*2)) # fore left
+                
+                progressbars[1].set((vars.motor[0] + max_speed)
+                                     / (max_speed*2)) # fore right
+                
+                progressbars[2].set((vars.motor[2] + max_speed)
+                                     / (max_speed*2)) # back left
+                
+                progressbars[3].set((vars.motor[1] + max_speed)
+                                     / (max_speed*2)) # back right
 
                 motor_frame.after(5, update)
 
