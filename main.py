@@ -46,6 +46,10 @@ if config["GENERAL"].getboolean("debug") is False:
         vars.ep_battery = ep_battery
         vars.led = led
 
+        vars.ep_led.set_led(comp=vars.led.COMP_ALL,
+                            r=0, g=5, b=5, 
+                            effect=vars.led.EFFECT_ON)
+
         # Callback to update distance
         def distance(value):
             vars.distance = value[0]/10
@@ -109,4 +113,6 @@ run_guis()
 result = ep_vision.unsub_detect_info(name="person")
 cv2.destroyAllWindows()
 ep_camera.stop_video_stream()
+vars.ep_led.set_led(comp=vars.led.COMP_ALL, 
+                    effect=vars.led.EFFECT_OFF)
 ep_robot.close()

@@ -115,14 +115,6 @@ class MainGui:
             def race(count):
                 nonlocal stop_cntdw, rp
                 if count >= 0 and not stop_cntdw:
-                    if count % 2 == 0:
-                        vars.ep_led.set_led(comp=vars.led.COMP_ALL,
-                                            r=0, g=0, b=5, 
-                                            effect=vars.led.EFFECT_ON)
-                    else:
-                        vars.ep_led.set_led(comp=vars.led.COMP_ALL,
-                                            r=0, g=5, b=5, 
-                                            effect=vars.led.EFFECT_ON)
                     button.configure(text="ABORT", command=stop)  # Change button to abort
                     label.configure(text=str(count), font=("Arial", 25, "bold"))
                     frame.after(1000, race, count - 1)  # Continue countdown
