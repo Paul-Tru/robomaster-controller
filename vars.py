@@ -29,7 +29,7 @@ btn_10 = False
 btn_11 = False
 
 # Movement
-trigger_hat = (0, 0)
+trigger_hat = ((0, 0), 0, 0)
 
 # Robot
 overwrite = False

@@ -1,4 +1,8 @@
 import vars
+import configparser
+
+config = configparser.ConfigParser()
+config.read("config.ini")
 
 def check_conn() -> bool:
     """checks connection to robot"""
@@ -11,10 +15,12 @@ def check_conn() -> bool:
         return False
     
 def main():
+    trigger = 0
+    threshold = int(config["CONTROLLER"]["threshold"])
     while not vars.overwrite:
         hat = vars.trigger_hat[0]
-        trigger = vars.trigger_hat[1]
-        # print(hat, trigger)
+        trigger_right = vars.trigger_hat[1]
+        trigger_left = vars.trigger_hat[2]
 
         # -1, 1 | 0, 1 | 1, 1
         # -------------------
@@ -28,15 +34,18 @@ def main():
         # w4: back right
 
         # stop movement
-        if hat == (0, 0):
+        if hat == (0, 0) and trigger_right < threshold and trigger_left < threshold:
             vars.ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             vars.motor = [0, 0, 0, 0]
         
         # move forward or backward
-        elif hat == (0, 1) or hat == (0, -1):
-
-            if hat == (0, -1):
-                trigger = -trigger
+        elif hat == (0, 0):
+            if trigger_left > threshold and trigger_right < threshold:
+                trigger = -trigger_left
+            elif trigger_right > threshold and trigger_left < threshold:
+                trigger = trigger_right
+            else:
+                print("Dont press both triggers at the same time")      
 
             vars.ep_chassis.drive_wheels(w1=trigger, 
                                          w2=trigger, 
@@ -49,11 +58,13 @@ def main():
         elif hat == (1, 0) or hat == (-1, 0):
 
             if hat == (-1, 0):
-                trigger = -trigger
+                trigger_right = -trigger_right
                 
-            vars.ep_chassis.drive_wheels(w1=-trigger, 
-                                         w2=trigger, 
-                                         w3=-trigger,
-                                         w4=trigger)
+            vars.ep_chassis.drive_wheels(w1=-trigger_right, 
+                                         w2=trigger_right, 
+                                         w3=-trigger_right,
+                                         w4=trigger_right)
             
-            vars.motor = [-trigger, trigger, -trigger, trigger]
+            vars.motor = [-trigger_right, trigger_right,
+                          -trigger_right, trigger_right]
+            

@@ -33,7 +33,8 @@ def read():
 
         # Initialize hat and joystick values
         hat_position = (0, 0)
-        right_trigger_value = 0  # Only track the right trigger
+        right_trigger_value = 0
+        left_trigger_value = 0
 
         # Loop to read inputs
         while True:
@@ -57,11 +58,16 @@ def read():
                         if axis == 5:  # right trigger
                             right_trigger_value = round((round(-value) + max_speed) / 2)
                             vars.tr_r = right_trigger_value
-                            #print(f"Right Trigger value: {right_trigger_value}")
+
+                        if axis == 4:  # left trigger
+                            left_trigger_value = round((round(-value) + max_speed) / 2)
+                            vars.tr_l = left_trigger_value
+
 
                 # Reset values if the trigger is not pressed enough
                 if event.type == pygame.JOYAXISMOTION and abs(value) < threshold:
                     right_trigger_value = 0
+                    left_trigger_value = 0
                     vars.tr_r = 0
 
                 # Process button events
@@ -78,7 +84,7 @@ def read():
                     print(f"Button {event.button} released")
 
             # Output the current hat and right trigger value
-            vars.trigger_hat = hat_position, right_trigger_value
+            vars.trigger_hat = hat_position, right_trigger_value, left_trigger_value
 
     else:
         # Handle non-successful connection

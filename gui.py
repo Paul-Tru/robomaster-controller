@@ -1,3 +1,5 @@
+import time
+
 import configparser
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
@@ -212,8 +214,6 @@ class MainGui:
                 current_distance_frame.configure(fg_color="darkred")
             else:
                 current_distance_frame.configure(fg_color="#2E2E2E")
-                vars.motor_fl, vars.motor_fr = 0, 0
-                vars.motor_bl, vars.motor_br = 0, 0
             current_distance_label.configure(text=f"{vars.distance}cm")
 
             right_frame.after(100, update_values)
