@@ -1,5 +1,3 @@
-import time
-
 import configparser
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
@@ -64,7 +62,7 @@ class MainGui:
                 motor_frame.grid_columnconfigure(1, weight=1)
 
                 # Creating one progressbar for every wheel
-                for i in range(4):
+                for _ in range(4):
                     progressbar = ctk.CTkProgressBar(motor_frame, orientation="vertical")
                     progressbar.grid(row=row, column=column, padx=25, pady=self.comp_pad, sticky="nsew")
                     progressbars.append(progressbar)

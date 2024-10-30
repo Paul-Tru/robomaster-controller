@@ -40,6 +40,10 @@ def main():
         
         # move forward or backward
         elif hat == (0, 0):
+            # move forward when left trigger is released 
+            # and right trigger pressed
+            # and opposite for backwards
+            
             if trigger_left > threshold and trigger_right < threshold:
                 trigger = -trigger_left
             elif trigger_right > threshold and trigger_left < threshold:

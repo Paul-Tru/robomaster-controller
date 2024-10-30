@@ -70,18 +70,16 @@ def read():
                     left_trigger_value = 0
                     vars.tr_r = 0
 
-                # Process button events
-                button_states = {}
-
+                # add button to list when pressed
                 if event.type == pygame.JOYBUTTONDOWN:
-                    button_name = f"btn_{event.button}"
-                    button_states[button_name] = True
-                    setattr(vars, button_name, True)  # Update button state
-                    print(f"Button {event.button} pressed")
+                    vars.button.append(event.button)
+                    #print(f"Button {event.button} pressed")
+                    print(vars.button)
 
+                # remove from list when released
                 if event.type == pygame.JOYBUTTONUP:
-                    setattr(vars, f'btn_{event.button}', False)
-                    print(f"Button {event.button} released")
+                    vars.button.remove(event.button)
+                    #print(f"Button {event.button} released")
 
             # Output the current hat and right trigger value
             vars.trigger_hat = hat_position, right_trigger_value, left_trigger_value

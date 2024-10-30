@@ -15,18 +15,7 @@ tr_l:int = 0
 tr_r:int = 0
 
 # Buttons
-btn_0 = False
-btn_1 = False
-btn_2 = False
-btn_3 = False
-btn_4 = False
-btn_5 = False
-btn_6 = False
-btn_7 = False
-btn_8 = False
-btn_9 = False
-btn_10 = False
-btn_11 = False
+button = []
 
 # Movement
 trigger_hat = ((0, 0), 0, 0)
