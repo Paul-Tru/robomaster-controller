@@ -44,6 +44,7 @@ if config["GENERAL"].getboolean("debug") is False:
         vars.ep_robot = ep_robot
         vars.ep_led = ep_led
         vars.ep_battery = ep_battery
+        vars.result = result
         vars.led = led
 
         vars.ep_led.set_led(comp=vars.led.COMP_ALL,
@@ -109,10 +110,11 @@ rc_thread.start()
 
 run_guis()
 
-
-result = ep_vision.unsub_detect_info(name="person")
-cv2.destroyAllWindows()
-ep_camera.stop_video_stream()
-vars.ep_led.set_led(comp=vars.led.COMP_ALL, 
-                    effect=vars.led.EFFECT_OFF)
-ep_robot.close()
+def stop_program():
+    """stop everything its doing"""
+    vars.result = ep_vision.unsub_detect_info(name="person")
+    cv2.destroyAllWindows()
+    vars.ep_camera.stop_video_stream()
+    vars.ep_led.set_led(comp=vars.led.COMP_ALL, 
+                        effect=vars.led.EFFECT_OFF)
+    vars.ep_robot.close()

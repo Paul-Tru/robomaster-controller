@@ -30,6 +30,7 @@ class MainGui:
         self.video()
         self.left_frame()
         self.right_frame()
+        self.exit_button()
 
         self.app.mainloop()
 
@@ -251,3 +252,11 @@ class MainGui:
         battery_label()
         distance_label()
         update_values()
+
+    def exit_button(self):
+        button = ctk.CTkButton(self, 
+                                text="Exit",
+                                command=stop_program())
+        
+        button.grid(row=5, column=1)
+

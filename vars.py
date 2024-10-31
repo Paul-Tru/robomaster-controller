@@ -27,9 +27,11 @@ battery:int = 0
 ep_robot = None
 ep_sensor = None
 ep_camera = None
+ep_vision = None
 ep_chassis = None
 ep_led = None
 ep_battery = None
+restult = None
 test_png = Image.open("test.png")
 
 # detect persons
