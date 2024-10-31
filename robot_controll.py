@@ -34,12 +34,12 @@ def main():
         # w4: back right
 
         # stop movement
-        if hat == (0, 0) and trigger_right < threshold and trigger_left < threshold:
+        if hat == (0, 0) and trigger_right < threshold and trigger_left < threshold and vars.button == []:
             vars.ep_chassis.drive_wheels(w1=0, w2=0, w3=0, w4=0)
             vars.motor = [0, 0, 0, 0]
         
         # move forward or backward
-        elif hat == (0, 0):
+        elif hat == (0, 0) and vars.button == []:
             # move forward when left trigger is released 
             # and right trigger pressed
             # and opposite for backwards
@@ -59,7 +59,7 @@ def main():
             vars.motor = [trigger, trigger, trigger, trigger]
         
         # move sideways
-        elif hat == (1, 0) or hat == (-1, 0):
+        elif hat == (1, 0) or hat == (-1, 0) and vars.button == []:
 
             if hat == (-1, 0):
                 trigger_right = -trigger_right
@@ -71,4 +71,33 @@ def main():
             
             vars.motor = [-trigger_right, trigger_right,
                           -trigger_right, trigger_right]
+                          
+        # turn
+        # left
+        elif 4 in vars.button or 5 in vars.button:
+            if trigger_left > threshold:
+                trigger = -trigger
+            else:
+                trigger_right = trigger
+            trigger = trigger/4
+            
+            if 4 in vars.button:
+                vars.ep_chassis.drive_wheels(w1=trigger, 
+                                            w2=-trigger, 
+                                            w3=-trigger,
+                                            w4=trigger)
+                
+                vars.motor = [trigger, trigger,
+                            -trigger, -trigger]
+
+            # right
+            elif 5 in vars.button:
+                vars.ep_chassis.drive_wheels(w1=-trigger_right, 
+                                            w2=trigger_right, 
+                                            w3=trigger_right,
+                                            w4=-trigger_right)
+                
+                vars.motor = [-trigger_right, trigger_right,
+                            trigger_right, -trigger_right]
+
             
