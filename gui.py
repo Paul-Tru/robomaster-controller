@@ -62,7 +62,7 @@ class MainGui:
                 motor_frame.grid_columnconfigure(1, weight=1)
 
                 # Creating one progressbar for every wheel
-                for i in range(4):
+                for _ in range(4):
                     progressbar = ctk.CTkProgressBar(motor_frame, orientation="vertical")
                     progressbar.grid(row=row, column=column, padx=25, pady=self.comp_pad, sticky="nsew")
                     progressbars.append(progressbar)
@@ -79,10 +79,18 @@ class MainGui:
             def update():
                 """updating values according to variables in vars.py"""
                 max_speed = int(self.config["ROBOT"]["max_speed"])
-                progressbars[0].set((vars.motor_fl + max_speed) / (max_speed*2))
-                progressbars[1].set((vars.motor_fr + max_speed) / (max_speed*2))
-                progressbars[2].set((vars.motor_bl + max_speed) / (max_speed*2))
-                progressbars[3].set((vars.motor_br + max_speed) / (max_speed*2))
+            
+                progressbars[0].set((vars.motor[3] + max_speed) 
+                                    / (max_speed*2)) # fore left
+                
+                progressbars[1].set((vars.motor[0] + max_speed)
+                                     / (max_speed*2)) # fore right
+                
+                progressbars[2].set((vars.motor[2] + max_speed)
+                                     / (max_speed*2)) # back left
+                
+                progressbars[3].set((vars.motor[1] + max_speed)
+                                     / (max_speed*2)) # back right
 
                 motor_frame.after(5, update)
 
@@ -196,8 +204,6 @@ class MainGui:
                 current_distance_frame.configure(fg_color="darkred")
             else:
                 current_distance_frame.configure(fg_color="#2E2E2E")
-                vars.motor_fl, vars.motor_fr = 0, 0
-                vars.motor_bl, vars.motor_br = 0, 0
             current_distance_label.configure(text=f"{vars.distance}cm")
 
             right_frame.after(100, update_values)

@@ -3,7 +3,6 @@ from PIL import Image
 """file to store global variables"""
 
 # Controller
-controller:str = None
 # Joystick
 joy_l_x:int = 0
 joy_l_y:int = 0
@@ -16,18 +15,10 @@ tr_l:int = 0
 tr_r:int = 0
 
 # Buttons
-btn_0 = False
-btn_1 = False
-btn_2 = False
-btn_3 = False
-btn_4 = False
-btn_5 = False
-btn_6 = False
-btn_7 = False
-btn_8 = False
-btn_9 = False
-btn_10 = False
-btn_11 = False
+button = []
+
+# Movement
+trigger_hat = ((0, 0), 0, 0)
 
 # Robot
 overwrite = False
@@ -45,10 +36,7 @@ test_png = Image.open("test.png")
 persons = []
 
 # motors
-motor_fl:int = 0
-motor_fr:int = 0
-motor_bl:int = 0
-motor_br:int = 0
+motor:list = [0, 0, 0, 0]
 
 # drag race
 bring_back = False
