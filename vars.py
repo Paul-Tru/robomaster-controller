@@ -3,12 +3,10 @@ from PIL import Image
 """file to store global variables"""
 
 # Controller
-# Joystick
-joy_l_x:int = 0
-joy_l_y:int = 0
-
-joy_r_x:int = 0
-joy_r_y:int = 0
+joy_l_up:bool = None
+joy_l_down:bool = None
+joy_l_forwards:bool = None
+joy_l_backwards:bool = None
 
 # Trigger
 tr_l:int = 0
@@ -28,6 +26,7 @@ ep_robot = None
 ep_sensor = None
 ep_camera = None
 ep_chassis = None
+ep_arm = None
 ep_led = None
 ep_battery = None
 test_png = Image.open("test.png")

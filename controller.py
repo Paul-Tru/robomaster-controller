@@ -35,6 +35,8 @@ def read():
         hat_position = (0, 0)
         right_trigger_value = 0
         left_trigger_value = 0
+        left_joystick_y_value = False
+        left_joystick_x_value = False
 
         # Loop to read inputs
         while True:
@@ -45,7 +47,6 @@ def read():
                 # Handle hat motion first
                 if event.type == pygame.JOYHATMOTION:
                     hat_position = event.value
-                    #print(f"Hat value: {hat_position}")
 
                 # Process joystick movement for right trigger
                 if event.type == pygame.JOYAXISMOTION:
@@ -53,7 +54,7 @@ def read():
                     value = -value  # Invert the axis if needed
 
                     # Continue only when value is over threshold
-                    if value >= threshold or value <= -threshold:
+                    if abs(value) >= threshold:
                         axis = event.axis
                         if axis == 5:  # right trigger
                             right_trigger_value = round((round(-value) + max_speed) / 2)
@@ -63,6 +64,25 @@ def read():
                             left_trigger_value = round((round(-value) + max_speed) / 2)
                             vars.tr_l = left_trigger_value
 
+                        # robot arm
+                        negativ = False
+                        if axis == 0 or axis == 1:
+                            if value < 0:
+                                negativ = True
+                            else:
+                                negativ = False
+
+                            if axis == 0:  # left joystick x-axis
+                                if negativ:
+                                    vars.joy_l_backwards = True
+                                else:
+                                    vars.joy_l_forwards = True
+                        
+                            if axis == 1: # left joystick y-axis
+                                if negativ:
+                                    vars.joy_l_down = True
+                                else:
+                                    vars.joy_l_up = True
 
                 # Reset values if the trigger is not pressed enough
                 if event.type == pygame.JOYAXISMOTION and abs(value) < threshold:

@@ -32,11 +32,13 @@ if config["GENERAL"].getboolean("debug") is False:
         ep_vision = ep_robot.vision
         ep_camera = ep_robot.camera
         ep_camera.start_video_stream(display=False)
-        result = ep_vision.sub_detect_info(name="person", callback=detect_person.on_detect_person)
+        result = ep_vision.sub_detect_info(name="person", 
+                                           callback=detect_person.on_detect_person)
         ep_sensor = ep_robot.sensor
         ep_chassis = ep_robot.chassis
         ep_led = ep_robot.led
         ep_battery = ep_robot.battery
+        ep_arm = ep_robot.robotic_arm
 
         # Make variables global
         vars.ep_chassis = ep_chassis
@@ -44,6 +46,7 @@ if config["GENERAL"].getboolean("debug") is False:
         vars.ep_robot = ep_robot
         vars.ep_led = ep_led
         vars.ep_battery = ep_battery
+        vars.ep_arm = ep_arm
         vars.led = led
 
         vars.ep_led.set_led(comp=vars.led.COMP_ALL,

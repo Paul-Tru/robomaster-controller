@@ -16,6 +16,7 @@ def check_conn() -> bool:
     
 def main():
     trigger = 0
+    arm:tuple = (0, 0)  
     threshold = int(config["CONTROLLER"]["threshold"])
     while not vars.overwrite:
         hat = vars.trigger_hat[0]
@@ -100,4 +101,23 @@ def main():
                 vars.motor = [-trigger_right, trigger_right,
                             trigger_right, -trigger_right]
 
-            
+        # robot arm
+        if vars.joy_l_forwards:
+            print("forward")
+            arm = (arm[0] + 20, arm[1])
+
+        if vars.joy_l_backwards:
+            print("backward")
+            arm = (arm[0] - 20, arm[1])
+
+        if vars.joy_l_up:
+            print("up")
+            arm = (arm[0], arm[1] + 20)
+
+        if vars.joy_l_down:
+            print("down")
+            arm = (arm[0], arm[1] - 20)
+
+        if arm != (0, 0):
+            x, y = arm
+            vars.ep_arm.move(x=x, y=y)
